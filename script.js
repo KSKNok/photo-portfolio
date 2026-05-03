@@ -513,7 +513,7 @@
             '<p class="error-state">Print not found. <a href="store.html">Back to store</a></p>';
           return;
         }
-        document.title = p.title + " — Atelier Lumen";
+        document.title = p.title + " — AL";
         root.innerHTML =
           '<div class="product-layout">' +
           '<div class="product-hero">' +
