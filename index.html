@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Work — Atelier Lumen</title>
+    <meta
+      name="description"
+      content="Photography portfolio — selected prints and series."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Playfair Display"', "Georgia", "serif"],
+              sans: ['"DM Sans"', "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="font-sans text-stone-900 antialiased" data-page="home">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-logo" href="index.html">Atelier Lumen</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="index.html" data-nav="home">Work</a>
+          <a href="store.html" data-nav="store">Store</a>
+          <a href="about.html" data-nav="about">About</a>
+          <button
+            type="button"
+            class="cart-btn"
+            aria-label="Open cart"
+            title="Cart"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              aria-hidden="true"
+            >
+              <path d="M6 6h15l-1.5 9h-12z" />
+              <path d="M6 6 5 3H2" />
+              <circle cx="9" cy="20" r="1" />
+              <circle cx="18" cy="20" r="1" />
+            </svg>
+            <span class="cart-btn__badge" aria-live="polite">0</span>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-5 py-12 md:py-16">
+      <header class="mb-10 md:mb-14 reveal">
+        <p
+          class="text-xs font-semibold tracking-[0.2em] uppercase text-stone-500 mb-3"
+        >
+          Portfolio
+        </p>
+        <h1
+          class="font-serif text-4xl md:text-5xl font-semibold tracking-tight text-stone-900 mb-4"
+        >
+          Selected work
+        </h1>
+        <p class="prose-muted max-w-xl">
+          A quiet gallery of places, light, and texture. Open any image for a
+          full-screen view.
+        </p>
+      </header>
+
+      <div id="gallery-root" aria-busy="true"></div>
+    </main>
+
+    <footer class="border-t border-stone-200 mt-8 py-10 text-center text-sm text-stone-500">
+      <p>© <span id="y"></span> Atelier Lumen. Static demo for GitHub Pages.</p>
+    </footer>
+    <script>
+      document.getElementById("y").textContent = new Date().getFullYear();
+    </script>
+    <script src="script.js" defer></script>
+  </body>
+</html>

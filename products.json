@@ -1,0 +1,56 @@
+[
+  {
+    "id": "basalt-study",
+    "title": "Basalt Study",
+    "category": "Abstract",
+    "description": "Coastal geometry at last light. Archival pigment print on cotton rag, signed edition.",
+    "priceCents": 18500,
+    "currency": "USD",
+    "image": "https://picsum.photos/seed/basalt/1400/2100"
+  },
+  {
+    "id": "winter-river",
+    "title": "Winter River",
+    "category": "Landscape",
+    "description": "A quiet bend under snow. Limited run; ships unframed with certificate.",
+    "priceCents": 22000,
+    "currency": "USD",
+    "image": "https://picsum.photos/seed/winterriver/1600/900"
+  },
+  {
+    "id": "studio-window",
+    "title": "Studio Window",
+    "category": "Interior",
+    "description": "North light and dust motes. Part of the Interiors series.",
+    "priceCents": 16500,
+    "currency": "USD",
+    "image": "https://picsum.photos/seed/studiowin/1200/1200"
+  },
+  {
+    "id": "desert-road",
+    "title": "Desert Road",
+    "category": "Landscape",
+    "description": "Open horizon, late afternoon. Available in multiple sizes.",
+    "priceCents": 19500,
+    "currency": "USD",
+    "image": "https://picsum.photos/seed/desertroad/1800/1000"
+  },
+  {
+    "id": "silver-portrait",
+    "title": "Silver Portrait",
+    "category": "Portrait",
+    "description": "Natural light portrait session. Print-only; digital licensing on request.",
+    "priceCents": 24000,
+    "currency": "USD",
+    "image": "https://picsum.photos/seed/silverport/1100/1650"
+  },
+  {
+    "id": "night-market",
+    "title": "Night Market",
+    "category": "Street",
+    "description": "Neon and rain-slick pavement. High dynamic range capture.",
+    "priceCents": 17500,
+    "currency": "USD",
+    "image": "https://picsum.photos/seed/nightmkt/1500/1000"
+  }
+]
