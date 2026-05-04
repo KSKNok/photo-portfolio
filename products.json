@@ -1,5 +1,14 @@
 [
   {
+    "id": "stonewall",
+    "title": "Stonewall",
+    "category": "Landscape",
+    "description": "Low-resolution web preview. Archival prints available on request.",
+    "priceCents": 18500,
+    "currency": "USD",
+    "image": "Photos 1/Stonewall.jpg"
+  },
+  {
     "id": "basalt-study",
     "title": "Basalt Study",
     "category": "Abstract",
