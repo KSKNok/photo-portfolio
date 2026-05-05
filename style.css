@@ -262,9 +262,9 @@ img {
 }
 
 .lightbox__panel img {
-  max-height: 90vh;
-  width: min(94vw, 1600px);
-  max-width: none;
+  max-height: 85vh;
+  width: auto;
+  max-width: 100%;
   margin: 0 auto;
   display: block;
   border-radius: 0.25rem;
