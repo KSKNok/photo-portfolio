@@ -11,22 +11,9 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              serif: ['"Playfair Display"', "Georgia", "serif"],
-              sans: ['"DM Sans"', "system-ui", "sans-serif"],
-            },
-          },
-        },
-      };
-    </script>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body class="font-sans text-stone-900 antialiased" data-page="about">
+  <body class="page-body" data-page="about">
     <header class="site-header">
       <div class="site-header__inner">
         <a class="site-logo" href="index.html">AL</a>
@@ -60,19 +47,15 @@
       </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-5 py-12 md:py-20">
+    <main class="page-main page-main--about">
       <article class="reveal">
-        <p
-          class="text-xs font-semibold tracking-[0.2em] uppercase text-stone-500 mb-3"
-        >
+        <p class="page-subtitle">
           About
         </p>
-        <h1
-          class="font-serif text-4xl md:text-5xl font-semibold tracking-tight text-stone-900 mb-8"
-        >
+        <h1 class="page-title">
           Practice &amp; print
         </h1>
-        <div class="space-y-6 text-stone-600 leading-relaxed">
+        <div class="text-content">
           <p>
             AL is a photography practice focused on stillness,
             material detail, and the way light defines a room or a horizon.
@@ -87,13 +70,13 @@
           <p>
             <a
               href="store.html"
-              class="font-medium text-stone-900 underline underline-offset-4 decoration-stone-300 hover:decoration-stone-900"
+              class="link"
               >Browse the store</a
             >
             or
             <a
               href="index.html"
-              class="font-medium text-stone-900 underline underline-offset-4 decoration-stone-300 hover:decoration-stone-900"
+              class="link"
               >view the gallery</a
             >.
           </p>
@@ -101,7 +84,7 @@
       </article>
     </main>
 
-    <footer class="border-t border-stone-200 mt-8 py-10 text-center text-sm text-stone-500">
+    <footer class="page-footer">
       <p>© <span id="y"></span> AL.</p>
     </footer>
     <script>

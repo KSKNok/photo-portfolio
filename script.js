@@ -170,7 +170,75 @@
     m.hidden = false;
     bd.classList.add("is-open");
     m.classList.add("is-open");
+    activateDialog(m);
+  }
+
+  var activeDialog = null;
+  var lastFocusElement = null;
+
+  function setPageHidden(hidden) {
+    document.querySelectorAll("header, main, footer").forEach(function (el) {
+      if (!el) return;
+      if (hidden) el.setAttribute("aria-hidden", "true");
+      else el.removeAttribute("aria-hidden");
+    });
+  }
+
+  function getFocusableElements(root) {
+    if (!root) return [];
+    return Array.prototype.filter.call(
+      root.querySelectorAll(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      ),
+      function (el) {
+        return (
+          el.offsetWidth > 0 ||
+          el.offsetHeight > 0 ||
+          el.getClientRects().length
+        );
+      }
+    );
+  }
+
+  function activateDialog(dialog) {
+    if (!dialog) return;
+    activeDialog = dialog;
+    lastFocusElement = document.activeElement;
     document.body.classList.add("modal-open");
+    setPageHidden(true);
+    var focusable = getFocusableElements(dialog);
+    if (focusable.length) {
+      focusable[0].focus();
+    }
+  }
+
+  function deactivateDialog() {
+    if (!activeDialog) return;
+    document.body.classList.remove("modal-open");
+    setPageHidden(false);
+    if (lastFocusElement && lastFocusElement.focus) {
+      lastFocusElement.focus();
+    }
+    activeDialog = null;
+    lastFocusElement = null;
+  }
+
+  function handleDialogTab(event) {
+    if (!activeDialog || event.key !== "Tab") return;
+    var focusable = getFocusableElements(activeDialog);
+    if (!focusable.length) return;
+    var currentIndex = focusable.indexOf(document.activeElement);
+    if (event.shiftKey) {
+      if (currentIndex === 0 || document.activeElement === activeDialog) {
+        event.preventDefault();
+        focusable[focusable.length - 1].focus();
+      }
+    } else {
+      if (currentIndex === focusable.length - 1) {
+        event.preventDefault();
+        focusable[0].focus();
+      }
+    }
   }
 
   function closeModalPair(backdropId, modalId) {
@@ -180,7 +248,7 @@
     bd.classList.remove("is-open");
     m.classList.remove("is-open");
     m.hidden = true;
-    document.body.classList.remove("modal-open");
+    deactivateDialog();
   }
 
   function renderCartModalBody() {
@@ -323,8 +391,7 @@
     });
     document.body.classList.add("lightbox-open");
     updateLightboxSlide();
-    var panel = lb.querySelector(".lightbox__panel");
-    if (panel) panel.focus();
+    activateDialog(lb);
   }
 
   function closeLightbox() {
@@ -335,6 +402,7 @@
     var end = function () {
       lb.hidden = true;
       lb.removeEventListener("transitionend", end);
+      deactivateDialog();
     };
     lb.addEventListener("transitionend", end);
     if (lightboxState.lastFocus && lightboxState.lastFocus.focus) {
@@ -558,6 +626,10 @@
 
   function initModalEscape() {
     document.addEventListener("keydown", function (e) {
+      if (e.key === "Tab") {
+        handleDialogTab(e);
+        return;
+      }
       if (e.key !== "Escape") return;
       var cart = document.getElementById("modal-cart");
       if (cart && cart.classList.contains("is-open")) {
