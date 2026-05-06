@@ -34,14 +34,19 @@
       var parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
+      console.warn("Failed to load cart from localStorage:", e);
       return [];
     }
   }
 
   function setCart(items) {
-    localStorage.setItem(CART_KEY, JSON.stringify(items));
-    updateCartBadge();
-    document.dispatchEvent(new CustomEvent("cart:updated", { detail: items }));
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(items));
+      updateCartBadge();
+      document.dispatchEvent(new CustomEvent("cart:updated", { detail: items }));
+    } catch (e) {
+      console.error("Failed to save cart to localStorage:", e);
+    }
   }
 
   /**
@@ -106,17 +111,6 @@
       if (page === "product" && a.dataset.nav === "store") active = true;
       a.classList.toggle("is-active", active);
     });
-  }
-
-  function fetchProducts() {
-    return fetch(PRODUCTS_URL)
-      .then(function (r) {
-        if (!r.ok) throw new Error("Failed to load products");
-        return r.json();
-      })
-      .then(function (data) {
-        return (Array.isArray(data) ? data : []).map(normalizeProduct);
-      });
   }
 
   function injectShellLightbox() {
@@ -264,13 +258,17 @@
     }, 0);
     var currency = cart[0].currency || "USD";
     var lines = cart
-      .map(function (i) {
+      .map(function (i, idx) {
         return (
           "<li><span>" +
           escapeHtml(i.title) +
-          " × " +
+          "</span><div class=\"cart-qty\"><button type=\"button\" class=\"btn btn--ghost qty-btn\" data-qty=\"-1\" data-idx=\"" +
+          idx +
+          "\">−</button><span class=\"qty-val\">" +
           (i.qty || 1) +
-          "</span><span>" +
+          "</span><button type=\"button\" class=\"btn btn--ghost qty-btn\" data-qty=\"1\" data-idx=\"" +
+          idx +
+          "\">+</button></div><span>" +
           formatMoney(i.priceCents * (i.qty || 1), i.currency) +
           "</span></li>"
         );
@@ -284,6 +282,28 @@
       formatMoney(total, currency) +
       "</p>" +
       "<p class=\"prose-muted\" style=\"font-size:0.875rem;margin:0\">Checkout is not wired yet — this is a preview.</p>";
+
+    // Bind quantity buttons
+    body.querySelectorAll(".qty-btn").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var idx = parseInt(btn.dataset.idx, 10);
+        var delta = parseInt(btn.dataset.qty, 10);
+        var currentCart = getCart();
+
+        if (currentCart[idx]) {
+          var newQty = currentCart[idx].qty + delta;
+          if (newQty < 1) {
+            if (confirm("Remove this item from cart?")) {
+              currentCart.splice(idx, 1);
+            }
+          } else {
+            currentCart[idx].qty = newQty;
+          }
+          setCart(currentCart);
+          renderCartModalBody();
+        }
+      });
+    });
   }
 
   function escapeHtml(s) {
@@ -541,7 +561,8 @@
         container.appendChild(masonry);
         renderGallery(products, masonry);
       })
-      .catch(function () {
+      .catch(function (error) {
+        console.error("Failed to load gallery:", error);
         container.innerHTML =
           '<p class="error-state">Could not load gallery. Check that products.json is available.</p>';
       });
@@ -559,68 +580,10 @@
         container.appendChild(grid);
         renderStore(products, grid);
       })
-      .catch(function () {
+      .catch(function (error) {
+        console.error("Failed to load store:", error);
         container.innerHTML =
           '<p class="error-state">Could not load products.</p>';
-      });
-  }
-
-  function initProductPage() {
-    var root = document.getElementById("product-root");
-    if (!root) return;
-    var params = new URLSearchParams(window.location.search);
-    var id = params.get("id");
-    root.innerHTML = '<p class="loading-state">Loading…</p>';
-    fetchProducts()
-      .then(function (products) {
-        var p = products.find(function (x) {
-          return x.id === id;
-        });
-        if (!p) {
-          root.innerHTML =
-            '<p class="error-state">Print not found. <a href="store.html">Back to store</a></p>';
-          return;
-        }
-        document.title = p.title + " — AL";
-        root.innerHTML =
-          '<div class="product-layout">' +
-          '<div class="product-hero">' +
-          '<img src="' +
-          escapeAttr(p.image) +
-          '" alt="' +
-          escapeAttr(p.title) +
-          '" loading="lazy" decoding="async" />' +
-          "</div>" +
-          '<div class="product-detail">' +
-          '<p class="eyebrow">' +
-          escapeHtml(p.category) +
-          "</p>" +
-          "<h1>" +
-          escapeHtml(p.title) +
-          "</h1>" +
-          '<p class="price">' +
-          formatMoney(p.priceCents, p.currency) +
-          "</p>" +
-          '<p class="description">' +
-          escapeHtml(p.description) +
-          "</p>" +
-          '<div class="btn-row">' +
-          '<button type="button" class="btn btn--primary" data-open-coming-soon>Purchase print</button>' +
-          '<button type="button" class="btn btn--ghost" data-add-print data-id="' +
-          escapeAttr(p.id) +
-          "\">Add to cart</button>" +
-          "</div>" +
-          "</div></div>";
-
-        var addBtn = root.querySelector("[data-add-print]");
-        if (addBtn) {
-          addBtn.addEventListener("click", function () {
-            addToCart(p, 1);
-          });
-        }
-      })
-      .catch(function () {
-        root.innerHTML = '<p class="error-state">Could not load product.</p>';
       });
   }
 
@@ -665,10 +628,197 @@
     onReady();
   }
 
-  window.PhotoPortfolio = {
-    addToCart: addToCart,
-    getCart: getCart,
-    setCart: setCart,
-    fetchProducts: fetchProducts,
-  };
+  // Cache products to avoid redundant network calls
+  var _productsCache = null;
+
+  function fetchProducts() {
+    if (_productsCache) return Promise.resolve(_productsCache);
+
+    return fetch(PRODUCTS_URL)
+      .then(function (r) {
+        if (!r.ok) throw new Error("Failed to load products");
+        return r.json();
+      })
+      .then(function (data) {
+        _productsCache = (Array.isArray(data) ? data : []).map(normalizeProduct);
+        return _productsCache;
+      })
+      .catch(function (error) {
+        console.error("Failed to fetch products:", error);
+        throw error;
+      });
+  }
+
+  // Fix escapeAttr to handle '>' properly
+  function escapeAttr(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  // Enhanced product page with validation and SEO
+  function initProductPage() {
+    var root = document.getElementById("product-root");
+    if (!root) return;
+
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get("id");
+
+    if (!id || typeof id !== "string") {
+      root.innerHTML = '<p class="error-state">Missing product ID. <a href="store.html">Back to store</a></p>';
+      return;
+    }
+
+    root.innerHTML = '<p class="loading-state">Loading…</p>';
+    fetchProducts()
+      .then(function (products) {
+        var p = products.find(function (x) { return x.id === id; });
+        if (!p) {
+          root.innerHTML = '<p class="error-state">Print not found. <a href="store.html">Back to store</a></p>';
+          return;
+        }
+
+        document.title = p.title + " — AL";
+
+        // Inject JSON-LD for SEO
+        var ld = document.createElement("script");
+        ld.type = "application/ld+json";
+        ld.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": p.title,
+          "image": p.image,
+          "description": p.description,
+          "offers": {
+            "@type": "Offer",
+            "price": (p.priceCents / 100).toString(),
+            "priceCurrency": p.currency,
+            "availability": "https://schema.org/InStock"
+          }
+        });
+        document.head.appendChild(ld);
+
+        root.innerHTML =
+          '<div class="product-layout">' +
+          '<div class="product-hero">' +
+          '<img src="' +
+          escapeAttr(p.image) +
+          '" alt="' +
+          escapeAttr(p.title) +
+          '" loading="lazy" decoding="async" />' +
+          "</div>" +
+          '<div class="product-detail">' +
+          '<p class="eyebrow">' +
+          escapeHtml(p.category) +
+          "</p>" +
+          "<h1>" +
+          escapeHtml(p.title) +
+          "</h1>" +
+          '<p class="price">' +
+          formatMoney(p.priceCents, p.currency) +
+          "</p>" +
+          '<p class="description">' +
+          escapeHtml(p.description) +
+          "</p>" +
+          '<div class="btn-row">' +
+          '<button type="button" class="btn btn--primary" data-open-coming-soon>Purchase print</button>' +
+          '<button type="button" class="btn btn--ghost" data-add-print data-id="' +
+          escapeAttr(p.id) +
+          "\">Add to cart</button>" +
+          "</div>" +
+          "</div></div>";
+
+        var addBtn = root.querySelector("[data-add-print]");
+        if (addBtn) {
+          addBtn.addEventListener("click", function () {
+            addToCart(p, 1);
+          });
+        }
+      })
+      .catch(function (error) {
+        console.error("Failed to load product:", error);
+        root.innerHTML = '<p class="error-state">Could not load product.</p>';
+      });
+  }
+        '<div class="product-hero">' +
+        '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" width="600" height="900" loading="lazy" decoding="async" />' +
+        "</div>" +
+        '<div class="product-detail">' +
+        '<p class="eyebrow">' + escapeHtml(p.category) + "</p>" +
+        "<h1>" + escapeHtml(p.title) + "</h1>" +
+        '<p class="price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
+        '<p class="description">' + escapeHtml(p.description) + "</p>" +
+        '<div class="btn-row">' +
+        '<button type="button" class="btn btn--primary" data-open-coming-soon>Purchase print</button>' +
+        '<button type="button" class="btn btn--ghost" data-add-print data-id="' + escapeAttr(p.id) + '">Add to cart</button>' +
+        "</div></div></div>";
+
+      var addBtn = root.querySelector("[data-add-print]");
+      if (addBtn) {
+        addBtn.addEventListener("click", function () {
+          addToCart(p, 1);
+        });
+      }
+    })
+    .catch(function (error) {
+      console.error("Failed to load product:", error);
+      root.innerHTML = '<p class="error-state">Could not load product.</p>';
+    });
+  
+  
+
+  function renderCartModalBody() {
+    var body = document.getElementById("cart-modal-body");
+  if (!body) return;
+  
+  var cart = getCart();
+  if (!cart.length) {
+    body.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
+    return;
+  }
+
+  var total = cart.reduce(function (s, i) { return s + i.priceCents * (i.qty || 1); }, 0);
+  var currency = cart[0].currency || "USD";
+
+  var lines = cart.map(function (i, idx) {
+    return '<li>' +
+      '<span>' + escapeHtml(i.title) + '</span>' +
+      '<div class="cart-qty">' +
+        '<button type="button" class="btn btn--ghost qty-btn" data-qty="-1" data-idx="' + idx + '">−</button>' +
+        '<span class="qty-val">' + (i.qty || 1) + '</span>' +
+        '<button type="button" class="btn btn--ghost qty-btn" data-qty="1" data-idx="' + idx + '">+</button>' +
+      '</div>' +
+      '<span>' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
+    '</li>';
+  }).join("");
+
+  body.innerHTML = 
+    '<ul class="cart-list">' + lines + '</ul>' +
+    '<p><strong>Subtotal:</strong> ' + formatMoney(total, currency) + '</p>' +
+    '<p class="prose-muted" style="font-size:0.875rem;margin:0">Checkout is not wired yet — this is a preview.</p>';
+    
+  // Bind quantity buttons
+  body.querySelectorAll(".qty-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var idx = parseInt(btn.dataset.idx, 10);
+      var delta = parseInt(btn.dataset.qty, 10);
+      var currentCart = getCart();
+      
+      if (currentCart[idx]) {
+        var newQty = currentCart[idx].qty + delta;
+        if (newQty < 1) {
+          if (confirm("Remove this item from cart?")) {
+            currentCart.splice(idx, 1);
+          }
+        } else {
+          currentCart[idx].qty = newQty;
+        }
+        setCart(currentCart);
+        renderCartModalBody();
+      }
+    });
+  });
+}
 })();
