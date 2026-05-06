@@ -4,7 +4,7 @@
     "title": "Stonewall",
     "category": "Landscape",
     "description": "Low-resolution web preview. High quality prints available on request.",
-    "priceCents": 35000,
+    "priceCents": 3500000,
     "currency": "USD",
     "image": "Photos 1/Stonewall.jpg"
   },
@@ -13,7 +13,7 @@
     "title": "Basalt Study",
     "category": "Abstract",
     "description": "Coastal geometry at last light. Archival pigment print on cotton rag, signed edition.",
-    "priceCents": 18500,
+    "priceCents": 1850000,
     "currency": "USD",
     "image": "Photos 1/IndonesiaBoats.jpg"
   },
@@ -22,7 +22,7 @@
     "title": "Winter River",
     "category": "Landscape",
     "description": "A quiet bend under snow. Limited run; ships unframed with certificate.",
-    "priceCents": 22000,
+    "priceCents": 2200000,
     "currency": "USD",
     "image": "Photos 1/ItalyStreet.jpg"
   },
@@ -31,7 +31,7 @@
     "title": "Studio Window",
     "category": "Interior",
     "description": "North light and dust motes. Part of the Interiors series.",
-    "priceCents": 16500,
+    "priceCents": 1650000,
     "currency": "USD",
     "image": "Photos 1/KeyWestTree.jpg"
   },
@@ -40,7 +40,7 @@
     "title": "Desert Road",
     "category": "Landscape",
     "description": "Open horizon, late afternoon. Available in multiple sizes.",
-    "priceCents": 19500,
+    "priceCents": 1950000,
     "currency": "USD",
     "image": "Photos 1/SingporeTemple.jpg"
   },
@@ -49,7 +49,7 @@
     "title": "Silver Portrait",
     "category": "Portrait",
     "description": "Natural light portrait session. Print-only; digital licensing on request.",
-    "priceCents": 24000,
+    "priceCents": 2400000,
     "currency": "USD",
     "image": "Photos 1/EqyptOranges.jpg"
   }
