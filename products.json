@@ -52,14 +52,5 @@
     "priceCents": 24000,
     "currency": "USD",
     "image": "Photos 1/EqyptOranges.jpg"
-  },
-  {
-    "id": "night-market",
-    "title": "Night Market",
-    "category": "Street",
-    "description": "Neon and rain-slick pavement. High dynamic range capture.",
-    "priceCents": 17500,
-    "currency": "USD",
-    "image": "Photos 1/Stonewall.jpg"
   }
 ]

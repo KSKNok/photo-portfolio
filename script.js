@@ -512,13 +512,6 @@
     initReveal();
   }
 
-  function escapeAttr(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;");
-  }
-
   function renderStore(products, container) {
     container.innerHTML = "";
     products.forEach(function (p) {
@@ -742,83 +735,4 @@
         root.innerHTML = '<p class="error-state">Could not load product.</p>';
       });
   }
-        '<div class="product-hero">' +
-        '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" width="600" height="900" loading="lazy" decoding="async" />' +
-        "</div>" +
-        '<div class="product-detail">' +
-        '<p class="eyebrow">' + escapeHtml(p.category) + "</p>" +
-        "<h1>" + escapeHtml(p.title) + "</h1>" +
-        '<p class="price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
-        '<p class="description">' + escapeHtml(p.description) + "</p>" +
-        '<div class="btn-row">' +
-        '<button type="button" class="btn btn--primary" data-open-coming-soon>Purchase print</button>' +
-        '<button type="button" class="btn btn--ghost" data-add-print data-id="' + escapeAttr(p.id) + '">Add to cart</button>' +
-        "</div></div></div>";
-
-      var addBtn = root.querySelector("[data-add-print]");
-      if (addBtn) {
-        addBtn.addEventListener("click", function () {
-          addToCart(p, 1);
-        });
-      }
-    })
-    .catch(function (error) {
-      console.error("Failed to load product:", error);
-      root.innerHTML = '<p class="error-state">Could not load product.</p>';
-    });
-  
-  
-
-  function renderCartModalBody() {
-    var body = document.getElementById("cart-modal-body");
-  if (!body) return;
-  
-  var cart = getCart();
-  if (!cart.length) {
-    body.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
-    return;
-  }
-
-  var total = cart.reduce(function (s, i) { return s + i.priceCents * (i.qty || 1); }, 0);
-  var currency = cart[0].currency || "USD";
-
-  var lines = cart.map(function (i, idx) {
-    return '<li>' +
-      '<span>' + escapeHtml(i.title) + '</span>' +
-      '<div class="cart-qty">' +
-        '<button type="button" class="btn btn--ghost qty-btn" data-qty="-1" data-idx="' + idx + '">−</button>' +
-        '<span class="qty-val">' + (i.qty || 1) + '</span>' +
-        '<button type="button" class="btn btn--ghost qty-btn" data-qty="1" data-idx="' + idx + '">+</button>' +
-      '</div>' +
-      '<span>' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
-    '</li>';
-  }).join("");
-
-  body.innerHTML = 
-    '<ul class="cart-list">' + lines + '</ul>' +
-    '<p><strong>Subtotal:</strong> ' + formatMoney(total, currency) + '</p>' +
-    '<p class="prose-muted" style="font-size:0.875rem;margin:0">Checkout is not wired yet — this is a preview.</p>';
-    
-  // Bind quantity buttons
-  body.querySelectorAll(".qty-btn").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      var idx = parseInt(btn.dataset.idx, 10);
-      var delta = parseInt(btn.dataset.qty, 10);
-      var currentCart = getCart();
-      
-      if (currentCart[idx]) {
-        var newQty = currentCart[idx].qty + delta;
-        if (newQty < 1) {
-          if (confirm("Remove this item from cart?")) {
-            currentCart.splice(idx, 1);
-          }
-        } else {
-          currentCart[idx].qty = newQty;
-        }
-        setCart(currentCart);
-        renderCartModalBody();
-      }
-    });
-  });
-}
 })();
