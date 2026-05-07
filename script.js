@@ -552,7 +552,7 @@
         var masonry = document.createElement("div");
         masonry.className = "gallery-masonry";
         container.appendChild(masonry);
-        renderGallery(products, masonry);
+        renderGallery(products.slice(0, 3), masonry);
       })
       .catch(function (error) {
         console.error("Failed to load gallery:", error);
