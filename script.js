@@ -716,8 +716,7 @@
           escapeHtml(p.description) +
           "</p>" +
           '<div class="btn-row">' +
-          '<button type="button" class="btn btn--primary" data-open-coming-soon>Purchase print</button>' +
-          '<button type="button" class="btn btn--ghost" data-add-print data-id="' +
+          '<button type="button" class="btn btn--primary" data-add-print data-id="' +
           escapeAttr(p.id) +
           "\">Add to cart</button>" +
           "</div>" +
