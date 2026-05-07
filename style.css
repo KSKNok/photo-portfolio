@@ -526,8 +526,9 @@ img {
 }
 
 .btn--primary {
-  background: var(--color-bg);
+  background: var(--color-surface);
   color: var(--color-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .btn--primary:hover,
