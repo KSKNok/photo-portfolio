@@ -526,8 +526,8 @@ img {
 }
 
 .btn--primary {
-  background: var(--color-text);
-  color: #fff;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .btn--primary:hover,
