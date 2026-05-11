@@ -6,7 +6,18 @@
     "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 350000,
     "currency": "USD",
-    "image": "Photos 1/Stonewall.jpg"
+    "image": "Photos 1/Stonewall.jpg",
+    "availableSizes": [
+      {
+        "size": "Small (8x10)",
+        "priceModifier": 0
+      },
+      {
+        "size": "Medium (16x20)",
+        "priceModifier": 50000
+      }
+    ],
+    "isSigned": false
   },
   {
     "id": "basalt-study",
@@ -15,7 +26,15 @@
     "description": "Coastal geometry at last light. Archival pigment print on cotton rag, signed edition.",
     "priceCents": 185000,
     "currency": "USD",
-    "image": "Photos 1/IndonesiaBoats.jpg"
+    "image": "Photos 1/IndonesiaBoats.jpg",
+    "availableSizes": [
+      {
+        "size": "Medium (16x20)",
+        "priceModifier": 0
+      }
+    ],
+    "isSigned": true,
+    "editionNumber": 50
   },
   {
     "id": "winter-river",
@@ -24,7 +43,15 @@
     "description": "A quiet bend under snow. Limited run; ships unframed with certificate.",
     "priceCents": 220000,
     "currency": "USD",
-    "image": "Photos 1/ItalyStreet.jpg"
+    "image": "Photos 1/ItalyStreet.jpg",
+    "availableSizes": [
+      {
+        "size": "Large (24x36)",
+        "priceModifier": 0
+      }
+    ],
+    "isSigned": true,
+    "editionNumber": 25
   },
   {
     "id": "studio-window",
@@ -33,7 +60,14 @@
     "description": "North light and dust motes. Part of the Interiors series.",
     "priceCents": 165000,
     "currency": "USD",
-    "image": "Photos 1/KeyWestTree.jpg"
+    "image": "Photos 1/KeyWestTree.jpg",
+    "availableSizes": [
+      {
+        "size": "Medium (16x20)",
+        "priceModifier": 0
+      }
+    ],
+    "isSigned": false
   },
   {
     "id": "desert-road",
@@ -42,7 +76,18 @@
     "description": "Open horizon, late afternoon. Available in multiple sizes.",
     "priceCents": 195000,
     "currency": "USD",
-    "image": "Photos 1/SingporeTemple.jpg"
+    "image": "Photos 1/SingporeTemple.jpg",
+    "availableSizes": [
+      {
+        "size": "Medium (16x20)",
+        "priceModifier": 0
+      },
+      {
+        "size": "Large (24x36)",
+        "priceModifier": 75000
+      }
+    ],
+    "isSigned": false
   },
   {
     "id": "silver-portrait",
@@ -51,6 +96,13 @@
     "description": "Natural light portrait session. Print-only; digital licensing on request.",
     "priceCents": 240000,
     "currency": "USD",
-    "image": "Photos 1/EqyptOranges.jpg"
+    "image": "Photos 1/EqyptOranges.jpg",
+    "availableSizes": [
+      {
+        "size": "Medium (16x20)",
+        "priceModifier": 0
+      }
+    ],
+    "isSigned": false
   }
 ]

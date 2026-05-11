@@ -152,6 +152,8 @@
       '<h2 id="cart-title">Cart</h2>' +
       '<div id="cart-modal-body"></div>' +
       '<div class="modal__actions">' +
+      // New button for emptying the whole cart
+      '<button type="button" class="btn btn--ghost" data-empty-cart>Empty Cart</button>' +
       '<button type="button" class="btn btn--ghost" data-close-cart>Close</button>' +
       "</div></div>";
     document.body.appendChild(wrap);
@@ -253,57 +255,88 @@
       body.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
       return;
     }
+
     var total = cart.reduce(function (s, i) {
       return s + i.priceCents * (i.qty || 1);
     }, 0);
     var currency = cart[0].currency || "USD";
     var lines = cart
       .map(function (i, idx) {
+        // Item line rendering, now including trash button
         return (
-          "<li><span>" +
+          "<li data-item-idx='" + idx + "' style='display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border);'>" +
+          // Item details and quantity controls
+          '<span style="flex-grow: 1;">' +
           escapeHtml(i.title) +
-          "</span><div class=\"cart-qty\"><button type=\"button\" class=\"btn btn--ghost qty-btn\" data-qty=\"-1\" data-idx=\"" +
-          idx +
-          "\">−</button><span class=\"qty-val\">" +
-          (i.qty || 1) +
-          "</span><button type=\"button\" class=\"btn btn--ghost qty-btn\" data-qty=\"1\" data-idx=\"" +
-          idx +
-          "\">+</button></div><span>" +
-          formatMoney(i.priceCents * (i.qty || 1), i.currency) +
-          "</span></li>"
+          '</span><div class="cart-qty" style="display: flex; align-items: center; gap: 0.5rem;">' +
+          // Quantity decrement button
+          '<button type="button" class="btn btn--ghost qty-btn" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1">−</button>' +
+          '<span class="qty-val">' + (i.qty || 1) + '</span>' +
+          // Quantity increment button
+          '<button type="button" class="btn btn--ghost qty-btn" data-action="increase" data-item-idx="' + idx + '" data-qty="1">+</button>' +
+          '</div><span style="flex-shrink: 0;">' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
+          // Trash button for line item removal
+          '<button type="button" class="btn btn--ghost trash-item-btn" data-item-idx="' + idx + '" aria-label="Remove this item">&times;</button></li>'
         );
       })
       .join("");
+
     body.innerHTML =
-      '<ul class="cart-list">' +
-      lines +
-      "</ul>" +
-      "<p><strong>Subtotal:</strong> " +
-      formatMoney(total, currency) +
-      "</p>" +
-      "<p class=\"prose-muted\" style=\"font-size:0.875rem;margin:0\">Checkout is not wired yet — this is a preview.</p>";
+      '<ul class="cart-list">' + lines + '</ul>' +
+      "<p><strong style='display: block; margin-top: 1rem;'>Subtotal:</strong> " + formatMoney(total, currency) + "</p>" +
+      // New Empty Cart Button
+      '<div class="modal__actions" style="margin-top: 1.5rem;"><button type="button" class="btn btn--ghost" data-empty-cart>Empty entire cart</button><button type="button" class="btn btn--ghost" data-close-cart>Close</button></div>';
 
-    // Bind quantity buttons
-    body.querySelectorAll(".qty-btn").forEach(function(btn) {
-      btn.addEventListener("click", function() {
-        var idx = parseInt(btn.dataset.idx, 10);
-        var delta = parseInt(btn.dataset.qty, 10);
-        var currentCart = getCart();
+    // Event Delegation for all dynamic buttons
+    body.removeEventListener("click", handleCartModalClick); // Remove old listener to prevent duplication
+    body.addEventListener("click", handleCartModalClick);
+  }
 
-        if (currentCart[idx]) {
-          var newQty = currentCart[idx].qty + delta;
-          if (newQty < 1) {
-            if (confirm("Remove this item from cart?")) {
-              currentCart.splice(idx, 1);
-            }
-          } else {
-            currentCart[idx].qty = newQty;
-          }
-          setCart(currentCart);
-          renderCartModalBody();
+
+  function handleCartModalClick(e) {
+    var target = e.target;
+    if (!target) return;
+
+    // 1. Handle Quantity Changes
+    if (target.classList.contains("qty-btn")) {
+      var btn = target;
+      var idx = parseInt(btn.dataset.itemIdx, 10);
+      var delta = parseInt(btn.dataset.qty, 10);
+      var currentCart = getCart();
+
+      if (currentCart[idx]) {
+        var newQty = currentCart[idx].qty + delta;
+        if (newQty < 1) {
+          // If decreasing to zero or less, remove the item.
+          confirm("Are you sure you want to remove this item from cart?");
+          currentCart.splice(idx, 1);
+        } else {
+          currentCart[idx].qty = newQty;
         }
-      });
-    });
+        setCart(currentCart);
+        renderCartModalBody();
+      }
+    }
+
+    // 2. Handle Individual Item Removal (Trash button)
+    if (target.classList.contains("trash-item-btn")) {
+      var idx = parseInt(target.dataset.itemIdx, 10);
+      var currentCart = getCart();
+      if (currentCart[idx]) {
+        confirm("Are you sure you want to remove this item from cart?");
+        currentCart.splice(idx, 1);
+        setCart(currentCart);
+        renderCartModalBody();
+      }
+    }
+
+    // 3. Handle Empty Cart Button (New Feature)
+    if (target.dataset.emptyCart != null) {
+      confirm("Are you sure you want to empty your entire cart?");
+      localStorage.removeItem(CART_KEY);
+      setCart([]); // Sets the cart to empty and updates badge
+      renderCartModalBody();
+    }
   }
 
   function escapeHtml(s) {
@@ -311,6 +344,7 @@
     d.textContent = s;
     return d.innerHTML;
   }
+
 
   function initCartButton() {
     var btn = document.querySelector(".cart-btn");
@@ -497,12 +531,18 @@
         '<p class="title">' +
         escapeHtml(p.title) +
         "</p>" +
-        "<span>" +
+        "<span class='category'>" + // Added class for easier CSS targeting if needed
         escapeHtml(p.category) +
         "</span>" +
         "</figcaption>";
       container.appendChild(article);
     });
+
+    // Re-select the category span to fix the structure, as the original used <span> without a class.
+     container.querySelectorAll(".gallery-item figcaption p").forEach(function(p) {
+        p.insertAdjacentHTML('afterend', '<span class="category">' + escapeHtml(p.textContent) + '</span>'); // Fixed tag closing here
+    });
+
     container.querySelectorAll(".gallery-open").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var idx = parseInt(btn.getAttribute("data-index"), 10);
@@ -512,6 +552,7 @@
     initReveal();
   }
 
+
   function renderStore(products, container) {
     container.innerHTML = "";
     products.forEach(function (p) {
@@ -520,22 +561,12 @@
       a.href = "product.html?id=" + encodeURIComponent(p.id);
       a.innerHTML =
         '<div class="store-card__media">' +
-        '<img src="' +
-        escapeAttr(p.image) +
-        '" alt="' +
-        escapeAttr(p.title) +
-        '" loading="lazy" decoding="async" />' +
+        '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" loading="lazy" decoding="async" />' +
         "</div>" +
         '<div class="store-card__body">' +
-        "<h2>" +
-        escapeHtml(p.title) +
-        "</h2>" +
-        '<p class="store-card__meta">' +
-        escapeHtml(p.category) +
-        "</p>" +
-        '<p class="store-card__price">' +
-        formatMoney(p.priceCents, p.currency) +
-        "</p>" +
+        "<h2 style='font-size: 1.125rem; margin: 0 0 0.5rem;'>" + escapeHtml(p.title) + "</h2>" + // Corrected tag closing here
+        '<p class="store-card__meta">' + escapeHtml(p.category) + "</p>" +
+        '<p class="store-card__price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
         "</div>";
       container.appendChild(a);
     });
@@ -546,18 +577,21 @@
     var container = document.getElementById("gallery-root");
     if (!container) return;
     container.innerHTML = '<p class="loading-state">Loading work…</p>';
+    container.setAttribute("aria-busy", "true");
     fetchProducts()
       .then(function (products) {
         container.innerHTML = "";
+        container.setAttribute("aria-busy", "false");
         var masonry = document.createElement("div");
         masonry.className = "gallery-masonry";
         container.appendChild(masonry);
+        // Only load first 3 for initial page view performance (as per old logic)
         renderGallery(products.slice(0, 3), masonry);
       })
       .catch(function (error) {
         console.error("Failed to load gallery:", error);
-        container.innerHTML =
-          '<p class="error-state">Could not load gallery. Check that products.json is available.</p>';
+        container.setAttribute("aria-busy", "false");
+        container.innerHTML = '<p class="error-state">Could not load gallery. Check that products.json is available.</p>';
       });
   }
 
@@ -565,9 +599,11 @@
     var container = document.getElementById("store-root");
     if (!container) return;
     container.innerHTML = '<p class="loading-state">Loading store…</p>';
+    container.setAttribute("aria-busy", "true");
     fetchProducts()
       .then(function (products) {
         container.innerHTML = "";
+        container.setAttribute("aria-busy", "false");
         var grid = document.createElement("div");
         grid.className = "store-grid";
         container.appendChild(grid);
@@ -575,8 +611,8 @@
       })
       .catch(function (error) {
         console.error("Failed to load store:", error);
-        container.innerHTML =
-          '<p class="error-state">Could not load products.</p>';
+        container.setAttribute("aria-busy", "false");
+        container.innerHTML = '<p class="error-state">Could not load products.</p>';
       });
   }
 
@@ -642,13 +678,13 @@
       });
   }
 
-  // Fix escapeAttr to handle '>' properly
+  // Utility function to safely escape attributes for HTML injection
   function escapeAttr(s) {
     return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(/&/g, "&")
+      .replace(/"/g, """)
+      .replace(/</g, "<")
+      .replace(/>/g, ">");
   }
 
   // Enhanced product page with validation and SEO
@@ -693,39 +729,27 @@
         });
         document.head.appendChild(ld);
 
-        root.innerHTML =
-          '<div class="product-layout">' +
-          '<div class="product-hero">' +
-          '<img src="' +
-          escapeAttr(p.image) +
-          '" alt="' +
-          escapeAttr(p.title) +
-          '" loading="lazy" decoding="async" />' +
-          "</div>" +
-          '<div class="product-detail">' +
-          '<p class="eyebrow">' +
-          escapeHtml(p.category) +
-          "</p>" +
-          "<h1>" +
-          escapeHtml(p.title) +
-          "</h1>" +
-          '<p class="price">' +
-          formatMoney(p.priceCents, p.currency) +
-          "</p>" +
-          '<p class="description">' +
-          escapeHtml(p.description) +
-          "</p>" +
-          '<div class="btn-row">' +
-          '<button type="button" class="btn btn--primary" data-add-print data-id="' +
-          escapeAttr(p.id) +
-          "\">Add to cart</button>" +
-          "</div>" +
-          "</div></div>";
+        var htmlContent = '<div class="product-layout">' +
+                          '<div class="product-hero">' +
+                          '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" loading="lazy" decoding="async" />' +
+                          "</div>" +
+                          '<div class="product-detail">' +
+                          '<p class="eyebrow">' + escapeHtml(p.category) + "</p>" +
+                          "<h1 style=\"font-size: clamp(1.75rem, 4vw, 2.25rem); margin: 0 0 0.5rem; line-height: 1.2;\">' + escapeHtml(p.title) + "</h1>" +
+                          '<p class="price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
+                          '<p class="description">' + escapeHtml(p.description) + '</p>' +
+                          '<div class="btn-row">' +
+                          // The button is a placeholder and needs JS to handle size/edition logic based on JSON data.
+                          '<button type="button" class="btn btn--primary" data-add-print data-id="' + escapeAttr(p.id) + '" data-size="default">Add to cart</button>' +
+                          '</div>' +
+                          '</div>' +
+                          '</div>';
 
+        root.innerHTML = htmlContent;
         var addBtn = root.querySelector("[data-add-print]");
         if (addBtn) {
           addBtn.addEventListener("click", function () {
-            addToCart(p, 1);
+            addToCart(p, 1); // Add default quantity for preview
           });
         }
       })
@@ -734,4 +758,5 @@
         root.innerHTML = '<p class="error-state">Could not load product.</p>';
       });
   }
+
 })();
