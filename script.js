@@ -285,17 +285,55 @@
       '<ul class="cart-list">' + lines + '</ul>' +
       "<p><strong style='display: block; margin-top: 1rem;'>Subtotal:</strong> " + formatMoney(total, currency) + "</p>";
 
-    // Event Delegation for all dynamic buttons
-    body.removeEventListener("click", handleCartModalClick); // Remove old listener to prevent duplication
-    body.addEventListener("click", handleCartModalClick);
+    // Event Delegation for all dynamic buttons - removed since listener is now on modal
   }
 
 
-  function handleCartModalClick(e) {
+  function renderCartPage() {
+    var content = document.getElementById("cart-page-content");
+    if (!content) return;
+    var cart = getCart();
+    if (!cart.length) {
+      content.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
+      return;
+    }
+
+    var total = cart.reduce(function (s, i) {
+      return s + i.priceCents * (i.qty || 1);
+    }, 0);
+    var currency = cart[0].currency || "USD";
+    var lines = cart
+      .map(function (i, idx) {
+        return (
+          "<li data-item-idx='" + idx + "' style='display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--color-border);'>" +
+          '<span style="flex-grow: 1; font-size: 1.1rem;">' +
+          escapeHtml(i.title) +
+          '</span><div class="cart-qty" style="display: flex; align-items: center; gap: 0.5rem;">' +
+          '<button type="button" class="btn btn--ghost qty-btn" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1">−</button>' +
+          '<span class="qty-val">' + (i.qty || 1) + '</span>' +
+          '<button type="button" class="btn btn--ghost qty-btn" data-action="increase" data-item-idx="' + idx + '" data-qty="1">+</button>' +
+          '</div><span style="flex-shrink: 0; font-weight: 500;">' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
+          '<button type="button" class="btn btn--ghost trash-item-btn" data-item-idx="' + idx + '" aria-label="Remove this item" style="font-size: 1.5rem;">&times;</button></li>'
+        );
+      })
+      .join("");
+
+    content.innerHTML =
+      '<ul class="cart-list">' + lines + '</ul>' +
+      '<div class="cart-actions">' +
+      '<button type="button" class="btn btn--ghost" id="empty-cart-page">Empty Cart</button>' +
+      '<p class="cart-total">Subtotal: ' + formatMoney(total, currency) + '</p>' +
+      '</div>';
+
+    content.removeEventListener("click", handleCartPageClick);
+    content.addEventListener("click", handleCartPageClick);
+  }
+
+  function handleCartPageClick(e) {
     var target = e.target;
     if (!target) return;
 
-    // 1. Handle Quantity Changes
+    // Handle Quantity Changes
     if (target.classList.contains("qty-btn")) {
       var btn = target;
       var idx = parseInt(btn.dataset.itemIdx, 10);
@@ -305,35 +343,37 @@
       if (currentCart[idx]) {
         var newQty = currentCart[idx].qty + delta;
         if (newQty < 1) {
-          // If decreasing to zero or less, remove the item.
-          confirm("Are you sure you want to remove this item from cart?");
-          currentCart.splice(idx, 1);
+          if (confirm("Are you sure you want to remove this item from cart?")) {
+            currentCart.splice(idx, 1);
+          }
         } else {
           currentCart[idx].qty = newQty;
         }
         setCart(currentCart);
-        renderCartModalBody();
+        renderCartPage();
       }
     }
 
-    // 2. Handle Individual Item Removal (Trash button)
+    // Handle Individual Item Removal
     if (target.classList.contains("trash-item-btn")) {
       var idx = parseInt(target.dataset.itemIdx, 10);
       var currentCart = getCart();
       if (currentCart[idx]) {
-        confirm("Are you sure you want to remove this item from cart?");
-        currentCart.splice(idx, 1);
-        setCart(currentCart);
-        renderCartModalBody();
+        if (confirm("Are you sure you want to remove this item from cart?")) {
+          currentCart.splice(idx, 1);
+          setCart(currentCart);
+          renderCartPage();
+        }
       }
     }
 
-    // 3. Handle Empty Cart Button (New Feature)
-    if (target.dataset.emptyCart != null) {
-      confirm("Are you sure you want to empty your entire cart?");
-      localStorage.removeItem(CART_KEY);
-      setCart([]); // Sets the cart to empty and updates badge
-      renderCartModalBody();
+    // Handle Empty Cart
+    if (target.id === "empty-cart-page") {
+      if (confirm("Are you sure you want to empty your entire cart?")) {
+        localStorage.removeItem(CART_KEY);
+        setCart([]);
+        renderCartPage();
+      }
     }
   }
 
@@ -348,10 +388,20 @@
     var btn = document.querySelector(".cart-btn");
     if (!btn) return;
     injectCartModal();
-    btn.addEventListener("click", function () {
-      renderCartModalBody();
-      openModalPair("modal-cart-backdrop", "modal-cart");
-    });
+    var modal = document.getElementById("modal-cart");
+    if (modal) {
+      modal.addEventListener("click", handleCartModalClick);
+    }
+    var page = document.body && document.body.dataset.page;
+    if (page === "cart") {
+      btn.addEventListener("click", function () {
+        // already on cart page; keep the current view stable
+      });
+    } else {
+      btn.addEventListener("click", function () {
+        window.location.href = 'cart.html';
+      });
+    }
     document.addEventListener("click", function (e) {
       if (e.target && e.target.dataset && e.target.dataset.closeCart != null) {
         closeModalPair("modal-cart-backdrop", "modal-cart");
@@ -803,6 +853,9 @@
           '<p class="title">' + escapeHtml(product.title) + '</p>' +
           '<p class="coolgallery-meta">' + escapeHtml(product.category) + '</p>' +
           '<p class="coolgallery-result-price">' + formatMoney(product.priceCents, product.currency) + '</p>' +
+          '<div class="coolgallery-result-actions">' +
+          '<button type="button" class="btn btn--primary" data-add-to-cart data-id="' + escapeAttr(product.id) + '">Add to cart</button>' +
+          '</div>' +
           '</div>' +
           '</article>'
         );
@@ -819,6 +872,15 @@
         startCoolGallery(container, state.products);
       });
     }
+    container.querySelectorAll('[data-add-to-cart]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.id;
+        var product = state.selected.find(function (p) { return p.id === id; });
+        if (product) {
+          addToCart(product, 1);
+        }
+      });
+    });
     initReveal();
   }
 
@@ -868,6 +930,7 @@
     else if (page === "store") initStorePage();
     else if (page === "coolgallery") initCoolGalleryPage();
     else if (page === "product") initProductPage();
+    else if (page === "cart") renderCartPage();
   }
 
   if (document.readyState === "loading") {
