@@ -681,10 +681,10 @@
   // Utility function to safely escape attributes for HTML injection
   function escapeAttr(s) {
     return String(s)
-      .replace(/&/g, "&")
-      .replace(/"/g, """)
-      .replace(/</g, "<")
-      .replace(/>/g, ">");
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 
   // Enhanced product page with validation and SEO
@@ -735,7 +735,7 @@
                           "</div>" +
                           '<div class="product-detail">' +
                           '<p class="eyebrow">' + escapeHtml(p.category) + "</p>" +
-                          "<h1 style=\"font-size: clamp(1.75rem, 4vw, 2.25rem); margin: 0 0 0.5rem; line-height: 1.2;\">' + escapeHtml(p.title) + "</h1>" +
+                          '<h1 style="font-size: clamp(1.75rem, 4vw, 2.25rem); margin: 0 0 0.5rem; line-height: 1.2;">' + escapeHtml(p.title) + "</h1>" +
                           '<p class="price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
                           '<p class="description">' + escapeHtml(p.description) + '</p>' +
                           '<div class="btn-row">' +
