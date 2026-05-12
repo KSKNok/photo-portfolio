@@ -86,7 +86,7 @@
   }
 
   function updateCartBadge() {
-    var badge = document.querySelector(".cart-btn__badge");
+    var badge = document.querySelector(".cart-badge");
     if (!badge) return;
     var n = getCartCount();
     badge.textContent = n > 99 ? "99+" : String(n);
@@ -294,7 +294,7 @@
     if (!content) return;
     var cart = getCart();
     if (!cart.length) {
-      content.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
+      content.innerHTML = '<div class="cart-empty-state"><p class="cart-empty">Your cart is empty.</p><a href="store.html" class="btn btn--primary">Continue shopping</a></div>';
       return;
     }
 
@@ -305,24 +305,39 @@
     var lines = cart
       .map(function (i, idx) {
         return (
-          "<li data-item-idx='" + idx + "' style='display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--color-border);'>" +
-          '<span style="flex-grow: 1; font-size: 1.1rem;">' +
-          escapeHtml(i.title) +
-          '</span><div class="cart-qty" style="display: flex; align-items: center; gap: 0.5rem;">' +
-          '<button type="button" class="btn btn--ghost qty-btn" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1">−</button>' +
+          '<li data-item-idx="' + idx + '" class="cart-item">' +
+          '<div class="cart-item__media">' +
+          '<img src="' + escapeAttr(i.image) + '" alt="' + escapeAttr(i.title) + '" loading="lazy" />' +
+          '</div>' +
+          '<div class="cart-item__details">' +
+          '<h3 class="cart-item__title">' + escapeHtml(i.title) + '</h3>' +
+          '<p class="cart-item__price">' + formatMoney(i.priceCents, i.currency) + '</p>' +
+          '</div>' +
+          '<div class="cart-item__controls">' +
+          '<div class="qty-controls">' +
+          '<button type="button" class="qty-btn qty-btn--decrease" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1" aria-label="Decrease quantity">−</button>' +
           '<span class="qty-val">' + (i.qty || 1) + '</span>' +
-          '<button type="button" class="btn btn--ghost qty-btn" data-action="increase" data-item-idx="' + idx + '" data-qty="1">+</button>' +
-          '</div><span style="flex-shrink: 0; font-weight: 500;">' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
-          '<button type="button" class="btn btn--ghost trash-item-btn" data-item-idx="' + idx + '" aria-label="Remove this item" style="font-size: 1.5rem;">&times;</button></li>'
+          '<button type="button" class="qty-btn qty-btn--increase" data-action="increase" data-item-idx="' + idx + '" data-qty="1" aria-label="Increase quantity">+</button>' +
+          '</div>' +
+          '<span class="cart-item__subtotal">' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
+          '</div>' +
+          '<button type="button" class="cart-item__remove trash-item-btn" data-item-idx="' + idx + '" aria-label="Remove this item from cart" title="Remove item">×</button>' +
+          '</li>'
         );
       })
       .join("");
 
     content.innerHTML =
-      '<ul class="cart-list">' + lines + '</ul>' +
+      '<ul class="cart-items">' + lines + '</ul>' +
+      '<div class="cart-summary">' +
+      '<div class="cart-summary__row">' +
+      '<span class="cart-summary__label">Subtotal:</span>' +
+      '<span class="cart-summary__value">' + formatMoney(total, currency) + '</span>' +
+      '</div>' +
       '<div class="cart-actions">' +
       '<button type="button" class="btn btn--ghost" id="empty-cart-page">Empty Cart</button>' +
-      '<p class="cart-total">Subtotal: ' + formatMoney(total, currency) + '</p>' +
+      '<button type="button" class="btn btn--primary" data-open-coming-soon>Proceed to Checkout</button>' +
+      '</div>' +
       '</div>';
 
     content.removeEventListener("click", handleCartPageClick);
@@ -383,36 +398,60 @@
     return d.innerHTML;
   }
 
+  function handleCartModalClick(e) {
+    var target = e.target;
+    if (!target) return;
+
+    // Handle Quantity Changes
+    if (target.classList.contains("qty-btn")) {
+      var btn = target;
+      var idx = parseInt(btn.dataset.itemIdx, 10);
+      var delta = parseInt(btn.dataset.qty, 10);
+      var currentCart = getCart();
+
+      if (currentCart[idx]) {
+        var newQty = currentCart[idx].qty + delta;
+        if (newQty < 1) {
+          if (confirm("Are you sure you want to remove this item from cart?")) {
+            currentCart.splice(idx, 1);
+          }
+        } else {
+          currentCart[idx].qty = newQty;
+        }
+        setCart(currentCart);
+        renderCartModalBody();
+      }
+    }
+
+    // Handle Individual Item Removal
+    if (target.classList.contains("trash-item-btn")) {
+      var idx = parseInt(target.dataset.itemIdx, 10);
+      var currentCart = getCart();
+      if (currentCart[idx]) {
+        if (confirm("Are you sure you want to remove this item from cart?")) {
+          currentCart.splice(idx, 1);
+          setCart(currentCart);
+          renderCartModalBody();
+        }
+      }
+    }
+
+    // Handle Empty Cart
+    if (target.dataset && target.dataset.emptyCart != null) {
+      if (confirm("Are you sure you want to empty your entire cart?")) {
+        localStorage.removeItem(CART_KEY);
+        setCart([]);
+        renderCartModalBody();
+      }
+    }
+  }
+
 
   function initCartButton() {
-    var btn = document.querySelector(".cart-btn");
-    if (!btn) return;
-    injectCartModal();
-    var modal = document.getElementById("modal-cart");
-    if (modal) {
-      modal.addEventListener("click", handleCartModalClick);
-    }
-    var page = document.body && document.body.dataset.page;
-    if (page === "cart") {
-      btn.addEventListener("click", function () {
-        // already on cart page; keep the current view stable
-      });
-    } else {
-      btn.addEventListener("click", function () {
-        window.location.href = 'cart.html';
-      });
-    }
-    document.addEventListener("click", function (e) {
-      if (e.target && e.target.dataset && e.target.dataset.closeCart != null) {
-        closeModalPair("modal-cart-backdrop", "modal-cart");
-      }
-    });
-    var bd = document.getElementById("modal-cart-backdrop");
-    if (bd) {
-      bd.addEventListener("click", function () {
-        closeModalPair("modal-cart-backdrop", "modal-cart");
-      });
-    }
+    // Initialize cart badge on navigation link
+    // Cart link navigates to cart.html (default behavior)
+    // Just ensure the badge is updated
+    updateCartBadge();
   }
 
   function initComingSoonTriggers() {
