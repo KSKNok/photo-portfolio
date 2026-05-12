@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Store — AL</title>
-    <meta name="description" content="Purchase archival prints." />
-    <meta name="keywords" content="photography, prints, store, purchase, archival, museum-grade, signed" />
+    <title>CoolGallery — AL</title>
+    <meta name="description" content="A swipe-first gallery for selecting favorite prints." />
+    <meta name="keywords" content="photography, gallery, swipe, prints, favorites, curated, interactive" />
     <meta name="author" content="AL" />
-    <meta property="og:title" content="Store — AL" />
-    <meta property="og:description" content="Purchase archival prints." />
+    <meta property="og:title" content="CoolGallery — AL" />
+    <meta property="og:description" content="A swipe-first gallery for selecting favorite prints." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://your-domain.com/store.html" />
+    <meta property="og:url" content="https://your-domain.com/coolgallery.html" />
     <meta property="og:image" content="https://your-domain.com/Photos%201/Stonewall.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Store — AL" />
-    <meta name="twitter:description" content="Purchase archival prints." />
+    <meta name="twitter:title" content="CoolGallery — AL" />
+    <meta name="twitter:description" content="A swipe-first gallery for selecting favorite prints." />
     <meta name="twitter:image" content="https://your-domain.com/Photos%201/Stonewall.jpg" />
-    <link rel="canonical" href="https://your-domain.com/store.html" />
+    <link rel="canonical" href="https://your-domain.com/coolgallery.html" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -25,7 +25,7 @@
     />
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body class="page-body" data-page="store">
+  <body class="page-body" data-page="coolgallery">
     <header class="site-header">
       <div class="site-header__inner">
         <a class="site-logo" href="index.html">AL</a>
@@ -61,19 +61,20 @@
     </header>
 
     <main class="page-main">
-      <header class="page-header reveal">
-        <p class="page-subtitle">
-          Store
-        </p>
-        <h1 class="page-title">
-          Prints
-        </h1>
-        <p class="page-description">
-          Museum-grade papers, signed editions. Choose a piece to view details and add to your cart.
-        </p>
-      </header>
+      <section class="coolgallery-hero reveal">
+        <div class="coolgallery-hero__inner">
+          <p class="page-subtitle">CoolGallery</p>
+          <h1 class="page-title">Swipe to choose your favorite prints</h1>
+          <p class="coolgallery-hero-copy">
+            Start a playful swipe experience with the same curated photography from the store. Tap Start, then drag the card left or right to pass or keep each image.
+          </p>
+          <button type="button" class="btn btn--primary coolgallery-start" data-action="start">
+            Start the gallery
+          </button>
+        </div>
+      </section>
 
-      <div id="store-root" aria-busy="true"></div>
+      <div id="coolgallery-root" aria-busy="true"></div>
     </main>
 
     <footer class="page-footer">
