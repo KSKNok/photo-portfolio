@@ -717,7 +717,7 @@
       '<div class="swipe-hint swipe-hint--left">Pass</div>' +
       '<div class="swipe-hint swipe-hint--right">Keep</div>' +
       '<div class="coolgallery-card__info">' +
-      '<p class="page-subtitle">Swipe to select</p>' +
+      '<p class="page-subtitle">Swipe right to select</p>' +
       '<h2 class="page-title">' + escapeHtml(product.title) + '</h2>' +
       '<p class="coolgallery-copy">' + escapeHtml(product.description) + '</p>' +
       '<p class="coolgallery-meta">' + escapeHtml(product.category) + ' • ' + formatMoney(product.priceCents, product.currency) + '</p>' +
