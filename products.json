@@ -2,107 +2,55 @@
   {
     "id": "stonewall",
     "title": "Stonewall",
-    "category": "Landscape",
+    "category": "Abstract",
     "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 350000,
     "currency": "USD",
-    "image": "Photos 1/Stonewall.jpg",
-    "availableSizes": [
-      {
-        "size": "Small (8x10)",
-        "priceModifier": 0
-      },
-      {
-        "size": "Medium (16x20)",
-        "priceModifier": 50000
-      }
-    ],
-    "isSigned": false
+    "image": "Photos 1/Stonewall.jpg"
   },
   {
-    "id": "basalt-study",
-    "title": "Basalt Study",
-    "category": "Abstract",
-    "description": "Coastal geometry at last light. Archival pigment print on cotton rag, signed edition.",
+    "id": "Indonesian boats",
+    "title": "Indonesian boats",
+    "category": "Landscape",
+    "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 185000,
     "currency": "USD",
-    "image": "Photos 1/IndonesiaBoats.jpg",
-    "availableSizes": [
-      {
-        "size": "Medium (16x20)",
-        "priceModifier": 0
-      }
-    ],
-    "isSigned": true,
-    "editionNumber": 50
+    "image": "Photos 1/IndonesiaBoats.jpg"
   },
   {
-    "id": "winter-river",
-    "title": "Winter River",
-    "category": "Landscape",
-    "description": "A quiet bend under snow. Limited run; ships unframed with certificate.",
+    "id": "Italy Street",
+    "title": "Italy Street",
+    "category": "Street",
+    "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 220000,
     "currency": "USD",
-    "image": "Photos 1/ItalyStreet.jpg",
-    "availableSizes": [
-      {
-        "size": "Large (24x36)",
-        "priceModifier": 0
-      }
-    ],
-    "isSigned": true,
-    "editionNumber": 25
+    "image": "Photos 1/ItalyStreet.jpg"
   },
   {
-    "id": "studio-window",
-    "title": "Studio Window",
-    "category": "Interior",
-    "description": "North light and dust motes. Part of the Interiors series.",
+    "id": "Florida Tree",
+    "title": "Florida Tree",
+    "category": "Landscape",
+    "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 165000,
     "currency": "USD",
-    "image": "Photos 1/KeyWestTree.jpg",
-    "availableSizes": [
-      {
-        "size": "Medium (16x20)",
-        "priceModifier": 0
-      }
-    ],
-    "isSigned": false
+    "image": "Photos 1/KeyWestTree.jpg"
   },
   {
-    "id": "desert-road",
-    "title": "Desert Road",
-    "category": "Landscape",
-    "description": "Open horizon, late afternoon. Available in multiple sizes.",
+    "id": "Singapore Temple",
+    "title": "Singapore Temple",
+    "category": "Street",
+    "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 195000,
     "currency": "USD",
-    "image": "Photos 1/SingporeTemple.jpg",
-    "availableSizes": [
-      {
-        "size": "Medium (16x20)",
-        "priceModifier": 0
-      },
-      {
-        "size": "Large (24x36)",
-        "priceModifier": 75000
-      }
-    ],
-    "isSigned": false
+    "image": "Photos 1/SingporeTemple.jpg"
   },
   {
-    "id": "silver-portrait",
-    "title": "Silver Portrait",
-    "category": "Portrait",
-    "description": "Natural light portrait session. Print-only; digital licensing on request.",
+    "id": "Eqpytian Delivery",
+    "title": "Egyptian Delivery",
+    "category": "Street",
+    "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 240000,
     "currency": "USD",
-    "image": "Photos 1/EqyptOranges.jpg",
-    "availableSizes": [
-      {
-        "size": "Medium (16x20)",
-        "priceModifier": 0
-      }
-    ],
-    "isSigned": false
+    "image": "Photos 1/EqyptOranges.jpg"
   }
 ]
