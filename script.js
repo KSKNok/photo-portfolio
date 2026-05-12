@@ -264,7 +264,7 @@
       .map(function (i, idx) {
         // Item line rendering, now including trash button
         return (
-          "<li data-item-idx='" + idx + "' style='display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border);'>" +
+          "<li data-item-idx='" + idx + "' style='display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border);'>" +
           // Item details and quantity controls
           '<span style="flex-grow: 1;">' +
           escapeHtml(i.title) +
@@ -283,9 +283,7 @@
 
     body.innerHTML =
       '<ul class="cart-list">' + lines + '</ul>' +
-      "<p><strong style='display: block; margin-top: 1rem;'>Subtotal:</strong> " + formatMoney(total, currency) + "</p>" +
-      // New Empty Cart Button
-      '<div class="modal__actions" style="margin-top: 1.5rem;"><button type="button" class="btn btn--ghost" data-empty-cart>Empty entire cart</button><button type="button" class="btn btn--ghost" data-close-cart>Close</button></div>';
+      "<p><strong style='display: block; margin-top: 1rem;'>Subtotal:</strong> " + formatMoney(total, currency) + "</p>";
 
     // Event Delegation for all dynamic buttons
     body.removeEventListener("click", handleCartModalClick); // Remove old listener to prevent duplication
