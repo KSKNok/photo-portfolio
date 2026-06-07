@@ -43,7 +43,6 @@
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(items));
       updateCartBadge();
-      document.dispatchEvent(new CustomEvent("cart:updated", { detail: items }));
     } catch (e) {
       console.error("Failed to save cart to localStorage:", e);
     }
@@ -264,11 +263,11 @@
       .map(function (i, idx) {
         // Item line rendering, now including trash button
         return (
-          "<li data-item-idx='" + idx + "' style='display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border);'>" +
+          "<li data-item-idx='" + idx + "' class='cart-modal-item'>" +
           // Item details and quantity controls
-          '<span style="flex-grow: 1;">' +
+          '<span class="cart-modal-item-details">' +
           escapeHtml(i.title) +
-          '</span><div class="cart-qty" style="display: flex; align-items: center; gap: 0.5rem;">' +
+          '</span><div class="cart-qty">' +
           // Quantity decrement button
           '<button type="button" class="btn btn--ghost qty-btn" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1">−</button>' +
           '<span class="qty-val">' + (i.qty || 1) + '</span>' +
@@ -342,6 +341,9 @@
 
     content.removeEventListener("click", handleCartPageClick);
     content.addEventListener("click", handleCartPageClick);
+    content.querySelectorAll(".cart-item__media img").forEach(function (img) {
+      addImgFallback(img);
+    });
   }
 
   function handleCartPageClick(e) {
@@ -358,14 +360,19 @@
       if (currentCart[idx]) {
         var newQty = currentCart[idx].qty + delta;
         if (newQty < 1) {
-          if (confirm("Are you sure you want to remove this item from cart?")) {
-            currentCart.splice(idx, 1);
-          }
+          showConfirmation("Remove item", "Remove this item from your cart?")
+            .then(function (confirmed) {
+              if (confirmed) {
+                currentCart.splice(idx, 1);
+                setCart(currentCart);
+                renderCartPage();
+              }
+            });
         } else {
           currentCart[idx].qty = newQty;
+          setCart(currentCart);
+          renderCartPage();
         }
-        setCart(currentCart);
-        renderCartPage();
       }
     }
 
@@ -374,21 +381,27 @@
       var idx = parseInt(target.dataset.itemIdx, 10);
       var currentCart = getCart();
       if (currentCart[idx]) {
-        if (confirm("Are you sure you want to remove this item from cart?")) {
-          currentCart.splice(idx, 1);
-          setCart(currentCart);
-          renderCartPage();
-        }
+        showConfirmation("Remove item", "Remove this item from your cart?")
+          .then(function (confirmed) {
+            if (confirmed) {
+              currentCart.splice(idx, 1);
+              setCart(currentCart);
+              renderCartPage();
+            }
+          });
       }
     }
 
     // Handle Empty Cart
     if (target.id === "empty-cart-page") {
-      if (confirm("Are you sure you want to empty your entire cart?")) {
-        localStorage.removeItem(CART_KEY);
-        setCart([]);
-        renderCartPage();
-      }
+      showConfirmation("Empty cart", "Remove all items from your cart?")
+        .then(function (confirmed) {
+          if (confirmed) {
+            localStorage.removeItem(CART_KEY);
+            setCart([]);
+            renderCartPage();
+          }
+        });
     }
   }
 
@@ -412,14 +425,19 @@
       if (currentCart[idx]) {
         var newQty = currentCart[idx].qty + delta;
         if (newQty < 1) {
-          if (confirm("Are you sure you want to remove this item from cart?")) {
-            currentCart.splice(idx, 1);
-          }
+          showConfirmation("Remove item", "Remove this item from your cart?")
+            .then(function (confirmed) {
+              if (confirmed) {
+                currentCart.splice(idx, 1);
+                setCart(currentCart);
+                renderCartModalBody();
+              }
+            });
         } else {
           currentCart[idx].qty = newQty;
+          setCart(currentCart);
+          renderCartModalBody();
         }
-        setCart(currentCart);
-        renderCartModalBody();
       }
     }
 
@@ -428,21 +446,27 @@
       var idx = parseInt(target.dataset.itemIdx, 10);
       var currentCart = getCart();
       if (currentCart[idx]) {
-        if (confirm("Are you sure you want to remove this item from cart?")) {
-          currentCart.splice(idx, 1);
-          setCart(currentCart);
-          renderCartModalBody();
-        }
+        showConfirmation("Remove item", "Remove this item from your cart?")
+          .then(function (confirmed) {
+            if (confirmed) {
+              currentCart.splice(idx, 1);
+              setCart(currentCart);
+              renderCartModalBody();
+            }
+          });
       }
     }
 
     // Handle Empty Cart
     if (target.dataset && target.dataset.emptyCart != null) {
-      if (confirm("Are you sure you want to empty your entire cart?")) {
-        localStorage.removeItem(CART_KEY);
-        setCart([]);
-        renderCartModalBody();
-      }
+      showConfirmation("Empty cart", "Remove all items from your cart?")
+        .then(function (confirmed) {
+          if (confirmed) {
+            localStorage.removeItem(CART_KEY);
+            setCart([]);
+            renderCartModalBody();
+          }
+        });
     }
   }
 
@@ -481,8 +505,6 @@
     }
   }
 
-  var revealObserved = typeof WeakSet !== "undefined" ? new WeakSet() : null;
-
   function initReveal() {
     var els = document.querySelectorAll(".reveal");
     if (!els.length) return;
@@ -504,8 +526,6 @@
       { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
     );
     els.forEach(function (el) {
-      if (revealObserved && revealObserved.has(el)) return;
-      if (revealObserved) revealObserved.add(el);
       io.observe(el);
     });
   }
@@ -618,16 +638,11 @@
         '<p class="title">' +
         escapeHtml(p.title) +
         "</p>" +
-        "<span class='category'>" + // Added class for easier CSS targeting if needed
+        "<span class='category'>" +
         escapeHtml(p.category) +
         "</span>" +
         "</figcaption>";
       container.appendChild(article);
-    });
-
-    // Re-select the category span to fix the structure, as the original used <span> without a class.
-     container.querySelectorAll(".gallery-item figcaption p").forEach(function(p) {
-        p.insertAdjacentHTML('afterend', '<span class="category">' + escapeHtml(p.textContent) + '</span>'); // Fixed tag closing here
     });
 
     container.querySelectorAll(".gallery-open").forEach(function (btn) {
@@ -635,6 +650,7 @@
         var idx = parseInt(btn.getAttribute("data-index"), 10);
         openLightbox(products, idx);
       });
+      addImgFallback(btn.querySelector("img"));
     });
     initReveal();
   }
@@ -651,11 +667,14 @@
         '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" loading="lazy" decoding="async" />' +
         "</div>" +
         '<div class="store-card__body">' +
-        "<h2 style='font-size: 1.125rem; margin: 0 0 0.5rem;'>" + escapeHtml(p.title) + "</h2>" + // Corrected tag closing here
+        "<h2>" + escapeHtml(p.title) + "</h2>"
         '<p class="store-card__meta">' + escapeHtml(p.category) + "</p>" +
         '<p class="store-card__price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
         "</div>";
       container.appendChild(a);
+    });
+    container.querySelectorAll(".store-card img").forEach(function (img) {
+      addImgFallback(img);
     });
     initReveal();
   }
@@ -731,13 +750,7 @@
     fetchProducts()
       .then(function (products) {
         container.setAttribute("aria-busy", "false");
-        container.innerHTML = '<p class="coolgallery-ready">Click Start above to begin the swipe deck.</p>';
-        var startButton = document.querySelector(".coolgallery-start");
-        if (startButton) {
-          startButton.addEventListener("click", function () {
-            startCoolGallery(container, products);
-          });
-        }
+        renderCoolGalleryIntro(container, products);
       })
       .catch(function (error) {
         console.error("Failed to load CoolGallery:", error);
@@ -863,6 +876,9 @@
         swipeCoolGalleryCard(button.dataset.action);
       });
     });
+    container.querySelectorAll(".coolgallery-card img").forEach(function (img) {
+      addImgFallback(img);
+    });
     initReveal();
   }
 
@@ -920,6 +936,9 @@
         }
       });
     });
+    container.querySelectorAll(".coolgallery-result-card img").forEach(function (img) {
+      addImgFallback(img);
+    });
     initReveal();
   }
 
@@ -967,7 +986,22 @@
     var page = document.body && document.body.dataset.page;
     if (page === "home") initHome();
     else if (page === "store") initStorePage();
-    else if (page === "coolgallery") initCoolGalleryPage();
+    else if (page === "coolgallery") {
+        var cgr = document.getElementById("coolgallery-root");
+        if (cgr) {
+          cgr.setAttribute("aria-busy", "true");
+          fetchProducts()
+            .then(function (products) {
+              cgr.setAttribute("aria-busy", "false");
+              renderCoolGalleryIntro(cgr, products);
+            })
+            .catch(function (error) {
+              console.error("Failed to load CoolGallery:", error);
+              cgr.setAttribute("aria-busy", "false");
+              cgr.innerHTML = '<p class="error-state">Could not load the gallery. Try again later.</p>';
+            });
+        }
+      }
     else if (page === "product") initProductPage();
     else if (page === "cart") renderCartPage();
   }
@@ -981,6 +1015,52 @@
   // Cache products to avoid redundant network calls
   var _productsCache = null;
   var coolGalleryState = null;
+  var pendingConfirmation = null;
+
+  function injectConfirmationModal() {
+    if (document.getElementById("modal-confirm-backdrop")) return;
+    var wrap = document.createElement("div");
+    wrap.innerHTML =
+      '<div class="modal-backdrop modal-backdrop--confirm" id="modal-confirm-backdrop" aria-hidden="true"></div>' +
+      '<div class="modal modal--confirm" id="modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg" hidden>' +
+      '<h2 id="confirm-title"></h2>' +
+      '<p id="confirm-msg"></p>' +
+      '<div class="modal__actions">' +
+      '<button type="button" class="btn btn--ghost" id="confirm-cancel">Cancel</button>' +
+      '<button type="button" class="btn btn--primary" id="confirm-ok">Confirm</button>' +
+      "</div></div>";
+    document.body.appendChild(wrap);
+  }
+
+  function showConfirmation(title, message) {
+    return new Promise(function (resolve) {
+      injectConfirmationModal();
+      var bd = document.getElementById("modal-confirm-backdrop");
+      var m = document.getElementById("modal-confirm");
+      if (!bd || !m) { resolve(false); return; }
+      document.getElementById("confirm-title").textContent = title;
+      document.getElementById("confirm-msg").textContent = message;
+      var okBtn = document.getElementById("confirm-ok");
+      var cancelBtn = document.getElementById("confirm-cancel");
+
+      function cleanup() {
+        bd.classList.remove("is-open");
+        m.classList.remove("is-open");
+        m.hidden = true;
+        pendingConfirmation = null;
+      }
+
+      okBtn.onclick = function () { cleanup(); resolve(true); };
+      cancelBtn.onclick = function () { cleanup(); resolve(false); };
+      bd.onclick = function () { cleanup(); resolve(false); };
+
+      m.hidden = false;
+      bd.classList.add("is-open");
+      m.classList.add("is-open");
+      m.querySelector("#confirm-ok").focus();
+      pendingConfirmation = { resolve: resolve };
+    });
+  }
 
   function fetchProducts() {
     if (_productsCache) return Promise.resolve(_productsCache);
@@ -1000,9 +1080,32 @@
       });
   }
 
+  // Utility: replace broken images with a colored placeholder
+  function addImgFallback(img) {
+    var parent = img && img.parentElement;
+    img.onerror = function () {
+      this.style.display = "none";
+      if (parent) {
+        parent.style.background = "linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)";
+        parent.style.minHeight = "120px";
+        parent.style.display = "flex";
+        parent.style.alignItems = "center";
+        parent.style.justifyContent = "center";
+        parent.style.color = "var(--color-muted)";
+        var label = document.createElement("span");
+        label.className = "img-placeholder";
+        label.textContent = "Image unavailable";
+        label.style.fontSize = "0.75rem";
+        label.style.textAlign = "center";
+        parent.appendChild(label);
+      }
+    };
+  }
+
   // Utility function to safely escape attributes for HTML injection
   function escapeAttr(s) {
-    return String(s)
+    s = s == null ? "" : String(s);
+    return s
       .replace(/&/g, "&amp;")
       .replace(/"/g, "&quot;")
       .replace(/</g, "&lt;")
@@ -1071,9 +1174,11 @@
         var addBtn = root.querySelector("[data-add-print]");
         if (addBtn) {
           addBtn.addEventListener("click", function () {
-            addToCart(p, 1); // Add default quantity for preview
+            addToCart(p, 1);
           });
         }
+        var prodImg = root.querySelector(".product-hero img");
+        if (prodImg) addImgFallback(prodImg);
       })
       .catch(function (error) {
         console.error("Failed to load product:", error);

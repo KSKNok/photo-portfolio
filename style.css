@@ -1148,3 +1148,45 @@ body.modal-open {
 .coolgallery-results .page-title {
   margin-top: 0;
 }
+
+/* Cart modal item styles */
+.cart-modal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cart-modal-item:last-child {
+  border-bottom: none;
+}
+
+.cart-modal-item-details {
+  flex-grow: 1;
+}
+
+/* Confirmation modal */
+.modal--confirm {
+  max-width: 24rem;
+}
+
+.modal--confirm h2 {
+  margin-bottom: 0.5rem;
+}
+
+.modal--confirm p {
+  margin-bottom: 1.5rem;
+}
+
+/* Broken image placeholder */
+.img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
