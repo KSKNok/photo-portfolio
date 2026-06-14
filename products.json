@@ -36,21 +36,21 @@
     "image": "Photos 1/KeyWestTree.jpg"
   },
   {
-    "id": "Singapore Temple",
+    "id": "singapore-temple",
     "title": "Singapore Temple",
     "category": "Street",
     "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 195000,
     "currency": "USD",
-    "image": "Photos 1/SingporeTemple.jpg"
+    "image": "Photos 1/SingaporeTemple.jpg"
   },
   {
-    "id": "Eqpytian Delivery",
+    "id": "egyptian-delivery",
     "title": "Egyptian Delivery",
     "category": "Street",
     "description": "Low-resolution web preview. High quality prints available on request.",
     "priceCents": 240000,
     "currency": "USD",
-    "image": "Photos 1/EqyptOranges.jpg"
+    "image": "Photos 1/EgyptOranges.jpg"
   }
 ]

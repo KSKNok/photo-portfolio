@@ -12,7 +12,7 @@ export function renderStore(products, container) {
       '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" loading="lazy" decoding="async" />' +
       "</div>" +
       '<div class="store-card__body">' +
-      "<h2>" + escapeHtml(p.title) + "</h2>"
+      "<h2>" + escapeHtml(p.title) + "</h2>" +
       '<p class="store-card__meta">' + escapeHtml(p.category) + "</p>" +
       '<p class="store-card__price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
       "</div>";
