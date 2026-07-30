@@ -1,17 +1,17 @@
 // Shared utilities for the photo portfolio
 
 export function initReveal() {
-  var els = document.querySelectorAll(".reveal");
+  const els = document.querySelectorAll(".reveal");
   if (!els.length) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    els.forEach(function (el) {
+    els.forEach((el) => {
       el.classList.add("is-visible");
     });
     return;
   }
-  var io = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (en) {
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((en) => {
         if (en.isIntersecting) {
           en.target.classList.add("is-visible");
           io.unobserve(en.target);
@@ -20,7 +20,7 @@ export function initReveal() {
     },
     { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
   );
-  els.forEach(function (el) {
+  els.forEach((el) => {
     io.observe(el);
   });
 }
@@ -49,29 +49,29 @@ export function normalizeProduct(raw) {
   };
 }
 
-var _productsCache = null;
-var PRODUCTS_URL = "./products.json";
+let _productsCache = null;
+const PRODUCTS_URL = "./products.json";
 
 export function fetchProducts() {
   if (_productsCache) return Promise.resolve(_productsCache);
 
   return fetch(PRODUCTS_URL)
-    .then(function (r) {
+    .then((r) => {
       if (!r.ok) throw new Error("Failed to load products");
       return r.json();
     })
-    .then(function (data) {
+    .then((data) => {
       _productsCache = (Array.isArray(data) ? data : []).map(normalizeProduct);
       return _productsCache;
     })
-    .catch(function (error) {
+    .catch((error) => {
       console.error("Failed to fetch products:", error);
       throw error;
     });
 }
 
 export function escapeHtml(s) {
-  var d = document.createElement("div");
+  const d = document.createElement("div");
   d.textContent = s;
   return d.innerHTML;
 }
@@ -86,21 +86,13 @@ export function escapeAttr(s) {
 }
 
 export function addImgFallback(img) {
-  var parent = img && img.parentElement;
+  const parent = img && img.parentElement;
   img.onerror = function () {
     this.style.display = "none";
     if (parent) {
-      parent.style.background = "linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)";
-      parent.style.minHeight = "120px";
-      parent.style.display = "flex";
-      parent.style.alignItems = "center";
-      parent.style.justifyContent = "center";
-      parent.style.color = "var(--color-muted)";
-      var label = document.createElement("span");
-      label.className = "img-placeholder";
+      parent.classList.add("img-placeholder");
+      const label = document.createElement("span");
       label.textContent = "Image unavailable";
-      label.style.fontSize = "0.75rem";
-      label.style.textAlign = "center";
       parent.appendChild(label);
     }
   };

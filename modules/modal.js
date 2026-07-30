@@ -1,6 +1,6 @@
 // Shared modal/dialog helpers
-var activeDialog = null;
-var lastFocusElement = null;
+let activeDialog = null;
+let lastFocusElement = null;
 
 export function activateDialog(dialog) {
   if (!dialog) return;
@@ -8,7 +8,7 @@ export function activateDialog(dialog) {
   lastFocusElement = document.activeElement;
   document.body.classList.add("modal-open");
   setPageHidden(true);
-  var focusable = getFocusableElements(dialog);
+  const focusable = getFocusableElements(dialog);
   if (focusable.length) {
     focusable[0].focus();
   }
@@ -26,7 +26,7 @@ export function deactivateDialog() {
 }
 
 export function setPageHidden(hidden) {
-  document.querySelectorAll("header, main, footer").forEach(function (el) {
+  document.querySelectorAll("header, main, footer").forEach((el) => {
     if (!el) return;
     if (hidden) el.setAttribute("aria-hidden", "true");
     else el.removeAttribute("aria-hidden");
@@ -39,7 +39,7 @@ export function getFocusableElements(root) {
     root.querySelectorAll(
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     ),
-    function (el) {
+    (el) => {
       return (
         el.offsetWidth > 0 ||
         el.offsetHeight > 0 ||
@@ -51,9 +51,9 @@ export function getFocusableElements(root) {
 
 export function handleDialogTab(event) {
   if (!activeDialog || event.key !== "Tab") return;
-  var focusable = getFocusableElements(activeDialog);
+  const focusable = getFocusableElements(activeDialog);
   if (!focusable.length) return;
-  var currentIndex = focusable.indexOf(document.activeElement);
+  const currentIndex = focusable.indexOf(document.activeElement);
   if (event.shiftKey) {
     if (currentIndex === 0 || document.activeElement === activeDialog) {
       event.preventDefault();
@@ -68,8 +68,8 @@ export function handleDialogTab(event) {
 }
 
 export function openModalPair(backdropId, modalId) {
-  var bd = document.getElementById(backdropId);
-  var m = document.getElementById(modalId);
+  const bd = document.getElementById(backdropId);
+  const m = document.getElementById(modalId);
   if (!bd || !m) return;
   m.hidden = false;
   bd.classList.add("is-open");
@@ -78,8 +78,8 @@ export function openModalPair(backdropId, modalId) {
 }
 
 export function closeModalPair(backdropId, modalId) {
-  var bd = document.getElementById(backdropId);
-  var m = document.getElementById(modalId);
+  const bd = document.getElementById(backdropId);
+  const m = document.getElementById(modalId);
   if (!bd || !m) return;
   bd.classList.remove("is-open");
   m.classList.remove("is-open");

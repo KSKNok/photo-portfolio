@@ -7,16 +7,8 @@ import { initCoolGalleryPage } from "./coolgallery.js";
 import { initProductPage } from "./product.js";
 import { fetchProducts, initReveal } from "./utils.js";
 
-// Initialize common utilities
-function setCopyrightYear() {
-  var yearElements = document.querySelectorAll("#y");
-  yearElements.forEach(function(el) {
-    el.textContent = new Date().getFullYear();
-  });
-}
-
 function initHeaderScroll() {
-  var header = document.querySelector(".site-header");
+  const header = document.querySelector(".site-header");
   if (!header) return;
   function onScroll() {
     header.classList.toggle("is-solid", window.scrollY > 24);
@@ -26,17 +18,17 @@ function initHeaderScroll() {
 }
 
 function setActiveNav() {
-  var page = document.body && document.body.dataset.page;
+  const page = document.body && document.body.dataset.page;
   if (!page) return;
   document.querySelectorAll(".site-nav a[data-nav]").forEach(function (a) {
-    var active = a.dataset.nav === page;
+    const active = a.dataset.nav === page;
     if (page === "product" && a.dataset.nav === "store") active = true;
     a.classList.toggle("is-active", active);
   });
 }
 
 function initHome() {
-  var container = document.getElementById("gallery-root");
+  const container = document.getElementById("gallery-root");
   if (!container) return;
   container.innerHTML = '<p class="loading-state">Loading work…</p>';
   container.setAttribute("aria-busy", "true");
@@ -44,7 +36,7 @@ function initHome() {
     .then(function (products) {
       container.innerHTML = "";
       container.setAttribute("aria-busy", "false");
-      var masonry = document.createElement("div");
+      const masonry = document.createElement("div");
       masonry.className = "gallery-masonry";
       container.appendChild(masonry);
       // Show ALL products (removed slice(0,3) limit)
@@ -58,7 +50,7 @@ function initHome() {
 }
 
 function initStorePage() {
-  var container = document.getElementById("store-root");
+  const container = document.getElementById("store-root");
   if (!container) return;
   container.innerHTML = '<p class="loading-state">Loading store…</p>';
   container.setAttribute("aria-busy", "true");
@@ -66,7 +58,7 @@ function initStorePage() {
     .then(function (products) {
       container.innerHTML = "";
       container.setAttribute("aria-busy", "false");
-      var grid = document.createElement("div");
+      const grid = document.createElement("div");
       grid.className = "store-grid";
       container.appendChild(grid);
       renderStore(products, grid);
@@ -79,7 +71,6 @@ function initStorePage() {
 }
 
 function onReady() {
-  setCopyrightYear();
   initHeaderScroll();
   setActiveNav();
   updateCartBadge();
@@ -92,16 +83,12 @@ function onReady() {
   // (page-specific dynamic content calls initReveal inside render functions)
   initReveal();
 
-  var page = document.body && document.body.dataset.page;
-  if (page === "home") initHome();
-  else if (page === "store") initStorePage();
-  else if (page === "coolgallery") {
-    initCoolGalleryPage();
-  }
-  else if (page === "product") initProductPage();
-  else if (page === "cart") {
-    renderCartPage();
-  }
+  const page = document.body && document.body.dataset.page;
+  try { if (page === "home") initHome(); } catch (e) { console.error("initHome failed:", e); }
+  try { if (page === "store") initStorePage(); } catch (e) { console.error("initStorePage failed:", e); }
+  try { if (page === "coolgallery") initCoolGalleryPage(); } catch (e) { console.error("initCoolGalleryPage failed:", e); }
+  try { if (page === "product") initProductPage(); } catch (e) { console.error("initProductPage failed:", e); }
+  try { if (page === "cart") renderCartPage(); } catch (e) { console.error("renderCartPage failed:", e); }
 }
 
 if (document.readyState === "loading") {

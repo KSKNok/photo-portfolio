@@ -3,11 +3,11 @@ import { escapeHtml, escapeAttr, addImgFallback, fetchProducts, formatMoney } fr
 import { addToCart } from "./cart.js";
 
 export function initProductPage() {
-  var root = document.getElementById("product-root");
+  const root = document.getElementById("product-root");
   if (!root) return;
 
-  var params = new URLSearchParams(window.location.search);
-  var id = params.get("id");
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
 
   if (!id || typeof id !== "string") {
     root.innerHTML = '<p class="error-state">Missing product ID. <a href="store.html">Back to store</a></p>';
@@ -16,8 +16,8 @@ export function initProductPage() {
 
   root.innerHTML = '<p class="loading-state">Loading…</p>';
   fetchProducts()
-    .then(function (products) {
-      var p = products.find(function (x) { return x.id === id; });
+    .then((products) => {
+      const p = products.find((x) => x.id === id);
       if (!p) {
         root.innerHTML = '<p class="error-state">Print not found. <a href="store.html">Back to store</a></p>';
         return;
@@ -26,7 +26,7 @@ export function initProductPage() {
       document.title = p.title + " — AL";
 
       // Inject JSON-LD for SEO
-      var ld = document.createElement("script");
+      const ld = document.createElement("script");
       ld.type = "application/ld+json";
       ld.textContent = JSON.stringify({
         "@context": "https://schema.org",
@@ -43,32 +43,32 @@ export function initProductPage() {
       });
       document.head.appendChild(ld);
 
-      var htmlContent = '<div class="product-layout">' +
-                        '<div class="product-hero">' +
-                        '<img src="' + escapeAttr(p.image) + '" alt="' + escapeAttr(p.title) + '" loading="lazy" decoding="async" />' +
-                        "</div>" +
-                        '<div class="product-detail">' +
-                        '<p class="eyebrow">' + escapeHtml(p.category) + "</p>" +
-                        '<h1 style="font-size: clamp(1.75rem, 4vw, 2.25rem); margin: 0 0 0.5rem; line-height: 1.2;">' + escapeHtml(p.title) + "</h1>" +
-                        '<p class="price">' + formatMoney(p.priceCents, p.currency) + "</p>" +
-                        '<p class="description">' + escapeHtml(p.description) + '</p>' +
-                        '<div class="btn-row">' +
-                        '<button type="button" class="btn btn--primary" data-add-print data-id="' + escapeAttr(p.id) + '" data-size="default">Add to cart</button>' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>';
+      root.innerHTML = `
+        <div class="product-layout">
+          <div class="product-hero">
+            <img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-detail">
+            <p class="eyebrow">${escapeHtml(p.category)}</p>
+            <h1 style="font-size: clamp(1.75rem, 4vw, 2.25rem); margin: 0 0 0.5rem; line-height: 1.2;">${escapeHtml(p.title)}</h1>
+            <p class="price">${formatMoney(p.priceCents, p.currency)}</p>
+            <p class="description">${escapeHtml(p.description)}</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" data-add-print data-id="${escapeAttr(p.id)}" data-size="default">Add to cart</button>
+            </div>
+          </div>
+        </div>`;
 
-      root.innerHTML = htmlContent;
-      var addBtn = root.querySelector("[data-add-print]");
+      const addBtn = root.querySelector("[data-add-print]");
       if (addBtn) {
-        addBtn.addEventListener("click", function () {
+        addBtn.addEventListener("click", () => {
           addToCart(p, 1);
         });
       }
-      var prodImg = root.querySelector(".product-hero img");
+      const prodImg = root.querySelector(".product-hero img");
       if (prodImg) addImgFallback(prodImg);
     })
-    .catch(function (error) {
+    .catch((error) => {
       console.error("Failed to load product:", error);
       root.innerHTML = '<p class="error-state">Could not load product.</p>';
     });

@@ -9,12 +9,12 @@ import {
   closeModalPair,
 } from "./modal.js";
 
-var CART_KEY = "photo-portfolio-cart";
+const CART_KEY = "photo-portfolio-cart";
 
 export function getCart() {
   try {
-    var raw = localStorage.getItem(CART_KEY);
-    var parsed = raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(CART_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     console.warn("Failed to load cart from localStorage:", e);
@@ -33,14 +33,14 @@ export function setCart(items) {
 
 export function addToCart(product, qty) {
   qty = qty == null ? 1 : Math.max(1, parseInt(qty, 10) || 1);
-  var normalized = {
+  const normalized = {
     id: String(product.id),
     title: product.title,
     priceCents: Number(product.priceCents) || 0,
     currency: product.currency || "USD",
     image: product.image || "",
   };
-  var line = {
+  const line = {
     id: normalized.id,
     title: normalized.title,
     priceCents: normalized.priceCents,
@@ -48,8 +48,8 @@ export function addToCart(product, qty) {
     image: normalized.image,
     qty: qty,
   };
-  var cart = getCart();
-  var found = cart.find(function (i) {
+  const cart = getCart();
+  const found = cart.find((i) => {
     return i.id === line.id;
   });
   if (found) {
@@ -63,125 +63,123 @@ export function addToCart(product, qty) {
 }
 
 export function getCartCount() {
-  return getCart().reduce(function (sum, i) {
+  return getCart().reduce((sum, i) => {
     return sum + (i.qty || 0);
   }, 0);
 }
 
 export function updateCartBadge() {
-  var badge = document.querySelector(".cart-badge");
+  const badge = document.querySelector(".cart-badge");
   if (!badge) return;
-  var n = getCartCount();
+  const n = getCartCount();
   badge.textContent = n > 99 ? "99+" : String(n);
   badge.classList.toggle("is-visible", n > 0);
 }
 
 function renderCartModalBody() {
-  var body = document.getElementById("cart-modal-body");
+  const body = document.getElementById("cart-modal-body");
   if (!body) return;
-  var cart = getCart();
+  const cart = getCart();
   if (!cart.length) {
     body.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
     return;
   }
 
-  var total = cart.reduce(function (s, i) {
+  const total = cart.reduce((s, i) => {
     return s + i.priceCents * (i.qty || 1);
   }, 0);
-  var currency = cart[0].currency || "USD";
-  var lines = cart
-    .map(function (i, idx) {
-      return (
-        "<li data-item-idx='" + idx + "' class='cart-modal-item'>" +
-        '<span class="cart-modal-item-details">' +
-        escapeHtml(i.title) +
-        '</span><div class="cart-qty">' +
-        '<button type="button" class="btn btn--ghost qty-btn" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1">−</button>' +
-        '<span class="qty-val">' + (i.qty || 1) + '</span>' +
-        '<button type="button" class="btn btn--ghost qty-btn" data-action="increase" data-item-idx="' + idx + '" data-qty="1">+</button>' +
-        '</div><span style="flex-shrink: 0;">' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
-        '<button type="button" class="btn btn--ghost trash-item-btn" data-item-idx="' + idx + '" aria-label="Remove this item">&times;</button></li>'
-      );
+  const currency = cart[0].currency || "USD";
+  const lines = cart
+    .map((i, idx) => {
+      return `
+        <li data-item-idx='${idx}' class='cart-modal-item'>
+          <span class="cart-modal-item-details">${escapeHtml(i.title)}</span>
+          <div class="cart-qty">
+            <button type="button" class="btn btn--ghost qty-btn" data-action="decrease" data-item-idx="${idx}" data-qty="-1">−</button>
+            <span class="qty-val">${i.qty || 1}</span>
+            <button type="button" class="btn btn--ghost qty-btn" data-action="increase" data-item-idx="${idx}" data-qty="1">+</button>
+          </div>
+          <span style="flex-shrink: 0;">${formatMoney(i.priceCents * (i.qty || 1), i.currency)}</span>
+          <button type="button" class="btn btn--ghost trash-item-btn" data-item-idx="${idx}" aria-label="Remove this item">&times;</button></li>`;
     })
     .join("");
 
   body.innerHTML =
-    '<ul class="cart-list">' + lines + '</ul>' +
-    "<p><strong style='display: block; margin-top: 1rem;'>Subtotal:</strong> " + formatMoney(total, currency) + "</p>";
+    `<ul class="cart-list">${lines}</ul>
+    <p><strong style='display: block; margin-top: 1rem;'>Subtotal:</strong> ${formatMoney(total, currency)}</p>`;
 }
 
 export function renderCartPage() {
-  var content = document.getElementById("cart-page-content");
+  const content = document.getElementById("cart-page-content");
   if (!content) return;
-  var cart = getCart();
+  const cart = getCart();
   if (!cart.length) {
     content.innerHTML = '<div class="cart-empty-state"><p class="cart-empty">Your cart is empty.</p><a href="store.html" class="btn btn--primary">Continue shopping</a></div>';
     return;
   }
 
-  var total = cart.reduce(function (s, i) {
+  const total = cart.reduce((s, i) => {
     return s + i.priceCents * (i.qty || 1);
   }, 0);
-  var currency = cart[0].currency || "USD";
-  var lines = cart
-    .map(function (i, idx) {
-      return (
-        '<li data-item-idx="' + idx + '" class="cart-item">' +
-        '<div class="cart-item__media">' +
-        '<img src="' + escapeAttr(i.image) + '" alt="' + escapeAttr(i.title) + '" loading="lazy" />' +
-        '</div>' +
-        '<div class="cart-item__details">' +
-        '<h3 class="cart-item__title">' + escapeHtml(i.title) + '</h3>' +
-        '<p class="cart-item__price">' + formatMoney(i.priceCents, i.currency) + '</p>' +
-        '</div>' +
-        '<div class="cart-item__controls">' +
-        '<div class="qty-controls">' +
-        '<button type="button" class="qty-btn qty-btn--decrease" data-action="decrease" data-item-idx="' + idx + '" data-qty="-1" aria-label="Decrease quantity">−</button>' +
-        '<span class="qty-val">' + (i.qty || 1) + '</span>' +
-        '<button type="button" class="qty-btn qty-btn--increase" data-action="increase" data-item-idx="' + idx + '" data-qty="1" aria-label="Increase quantity">+</button>' +
-        '</div>' +
-        '<span class="cart-item__subtotal">' + formatMoney(i.priceCents * (i.qty || 1), i.currency) + '</span>' +
-        '</div>' +
-        '<button type="button" class="cart-item__remove trash-item-btn" data-item-idx="' + idx + '" aria-label="Remove this item from cart" title="Remove item">×</button>' +
-        '</li>'
-      );
+  const currency = cart[0].currency || "USD";
+  const lines = cart
+    .map((i, idx) => {
+      return `
+        <li data-item-idx="${idx}" class="cart-item">
+          <div class="cart-item__media">
+            <img src="${escapeAttr(i.image)}" alt="${escapeAttr(i.title)}" loading="lazy" />
+          </div>
+          <div class="cart-item__details">
+            <h3 class="cart-item__title">${escapeHtml(i.title)}</h3>
+            <p class="cart-item__price">${formatMoney(i.priceCents, i.currency)}</p>
+          </div>
+          <div class="cart-item__controls">
+            <div class="qty-controls">
+              <button type="button" class="qty-btn qty-btn--decrease" data-action="decrease" data-item-idx="${idx}" data-qty="-1" aria-label="Decrease quantity">−</button>
+              <span class="qty-val">${i.qty || 1}</span>
+              <button type="button" class="qty-btn qty-btn--increase" data-action="increase" data-item-idx="${idx}" data-qty="1" aria-label="Increase quantity">+</button>
+            </div>
+            <span class="cart-item__subtotal">${formatMoney(i.priceCents * (i.qty || 1), i.currency)}</span>
+          </div>
+          <button type="button" class="cart-item__remove trash-item-btn" data-item-idx="${idx}" aria-label="Remove this item from cart" title="Remove item">×</button>
+        </li>`;
     })
     .join("");
 
   content.innerHTML =
-    '<ul class="cart-items">' + lines + '</ul>' +
-    '<div class="cart-summary">' +
-    '<div class="cart-summary__row">' +
-    '<span class="cart-summary__label">Subtotal:</span>' +
-    '<span class="cart-summary__value">' + formatMoney(total, currency) + '</span>' +
-    '</div>' +
-    '<div class="cart-actions">' +
-    '<button type="button" class="btn btn--ghost" id="empty-cart-page">Empty Cart</button>' +
-    '<button type="button" class="btn btn--primary" data-open-coming-soon>Proceed to Checkout</button>' +
-    '</div>' +
-    '</div>';
+    `<ul class="cart-items">${lines}</ul>
+    <div class="cart-summary">
+      <div class="cart-summary__row">
+        <span class="cart-summary__label">Subtotal:</span>
+        <span class="cart-summary__value">${formatMoney(total, currency)}</span>
+      </div>
+      <div class="cart-actions">
+        <button type="button" class="btn btn--ghost" id="empty-cart-page">Empty Cart</button>
+        <button type="button" class="btn btn--primary" data-open-coming-soon>Proceed to Checkout</button>
+      </div>
+    </div>`;
 
   content.removeEventListener("click", handleCartPageClick);
   content.addEventListener("click", handleCartPageClick);
-  content.querySelectorAll(".cart-item__media img").forEach(function (img) {
+  content.querySelectorAll(".cart-item__media img").forEach((img) => {
     addImgFallback(img);
   });
 }
 
 function handleCartPageClick(e) {
-  var target = e.target;
+  const target = e.target;
   if (!target) return;
 
   if (target.classList.contains("qty-btn")) {
-    var btn = target;
-    var idx = parseInt(btn.dataset.itemIdx, 10);
-    var delta = parseInt(btn.dataset.qty, 10);
-    var currentCart = getCart();
+    const btn = target;
+    const idx = parseInt(btn.dataset.itemIdx, 10);
+    const delta = parseInt(btn.dataset.qty, 10);
+    const currentCart = getCart();
     if (currentCart[idx]) {
-      var newQty = currentCart[idx].qty + delta;
+      const newQty = currentCart[idx].qty + delta;
       if (newQty < 1) {
         showConfirmation("Remove item", "Remove this item from your cart?")
-          .then(function (confirmed) {
+          .then((confirmed) => {
             if (confirmed) {
               currentCart.splice(idx, 1);
               setCart(currentCart);
@@ -197,11 +195,11 @@ function handleCartPageClick(e) {
   }
 
   if (target.classList.contains("trash-item-btn")) {
-    var idx = parseInt(target.dataset.itemIdx, 10);
-    var currentCart = getCart();
+    const idx = parseInt(target.dataset.itemIdx, 10);
+    const currentCart = getCart();
     if (currentCart[idx]) {
       showConfirmation("Remove item", "Remove this item from your cart?")
-        .then(function (confirmed) {
+        .then((confirmed) => {
           if (confirmed) {
             currentCart.splice(idx, 1);
             setCart(currentCart);
@@ -213,7 +211,7 @@ function handleCartPageClick(e) {
 
   if (target.id === "empty-cart-page") {
     showConfirmation("Empty cart", "Remove all items from your cart?")
-      .then(function (confirmed) {
+      .then((confirmed) => {
         if (confirmed) {
           localStorage.removeItem(CART_KEY);
           setCart([]);
@@ -224,19 +222,19 @@ function handleCartPageClick(e) {
 }
 
 function handleCartModalClick(e) {
-  var target = e.target;
+  const target = e.target;
   if (!target) return;
 
   if (target.classList.contains("qty-btn")) {
-    var btn = target;
-    var idx = parseInt(btn.dataset.itemIdx, 10);
-    var delta = parseInt(btn.dataset.qty, 10);
-    var currentCart = getCart();
+    const btn = target;
+    const idx = parseInt(btn.dataset.itemIdx, 10);
+    const delta = parseInt(btn.dataset.qty, 10);
+    const currentCart = getCart();
     if (currentCart[idx]) {
-      var newQty = currentCart[idx].qty + delta;
+      const newQty = currentCart[idx].qty + delta;
       if (newQty < 1) {
         showConfirmation("Remove item", "Remove this item from your cart?")
-          .then(function (confirmed) {
+          .then((confirmed) => {
             if (confirmed) {
               currentCart.splice(idx, 1);
               setCart(currentCart);
@@ -252,11 +250,11 @@ function handleCartModalClick(e) {
   }
 
   if (target.classList.contains("trash-item-btn")) {
-    var idx = parseInt(target.dataset.itemIdx, 10);
-    var currentCart = getCart();
+    const idx = parseInt(target.dataset.itemIdx, 10);
+    const currentCart = getCart();
     if (currentCart[idx]) {
       showConfirmation("Remove item", "Remove this item from your cart?")
-        .then(function (confirmed) {
+        .then((confirmed) => {
           if (confirmed) {
             currentCart.splice(idx, 1);
             setCart(currentCart);
@@ -268,7 +266,7 @@ function handleCartModalClick(e) {
 
   if (target.dataset && target.dataset.emptyCart != null) {
     showConfirmation("Empty cart", "Remove all items from your cart?")
-      .then(function (confirmed) {
+      .then((confirmed) => {
         if (confirmed) {
           localStorage.removeItem(CART_KEY);
           setCart([]);
@@ -280,60 +278,60 @@ function handleCartModalClick(e) {
 
 function injectComingSoonModal() {
   if (document.getElementById("modal-coming-soon-backdrop")) return;
-  var wrap = document.createElement("div");
+  const wrap = document.createElement("div");
   wrap.innerHTML =
-    '<div class="modal-backdrop" id="modal-coming-soon-backdrop" aria-hidden="true"></div>' +
-    '<div class="modal" id="modal-coming-soon" role="dialog" aria-modal="true" aria-labelledby="coming-soon-title" hidden>' +
-    '<h2 id="coming-soon-title">Coming soon</h2>' +
-    "<p>Checkout and print fulfillment will be available shortly. Thank you for your interest.</p>" +
-    '<div class="modal__actions">' +
-    '<button type="button" class="btn btn--primary" data-close-coming-soon>OK</button>' +
-    "</div></div>";
+    `<div class="modal-backdrop" id="modal-coming-soon-backdrop" aria-hidden="true"></div>
+    <div class="modal" id="modal-coming-soon" role="dialog" aria-modal="true" aria-labelledby="coming-soon-title" hidden>
+    <h2 id="coming-soon-title">Coming soon</h2>
+    <p>Checkout and print fulfillment will be available shortly. Thank you for your interest.</p>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--primary" data-close-coming-soon>OK</button>
+    </div></div>`;
   document.body.appendChild(wrap);
 }
 
 function injectCartModal() {
   if (document.getElementById("modal-cart-backdrop")) return;
-  var wrap = document.createElement("div");
+  const wrap = document.createElement("div");
   wrap.innerHTML =
-    '<div class="modal-backdrop" id="modal-cart-backdrop" aria-hidden="true"></div>' +
-    '<div class="modal" id="modal-cart" role="dialog" aria-modal="true" aria-labelledby="cart-title" hidden>' +
-    '<h2 id="cart-title">Cart</h2>' +
-    '<div id="cart-modal-body"></div>' +
-    '<div class="modal__actions">' +
-    '<button type="button" class="btn btn--ghost" data-empty-cart>Empty Cart</button>' +
-    '<button type="button" class="btn btn--ghost" data-close-cart>Close</button>' +
-    "</div></div>";
+    `<div class="modal-backdrop" id="modal-cart-backdrop" aria-hidden="true"></div>
+    <div class="modal" id="modal-cart" role="dialog" aria-modal="true" aria-labelledby="cart-title" hidden>
+    <h2 id="cart-title">Cart</h2>
+    <div id="cart-modal-body"></div>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--ghost" data-empty-cart>Empty Cart</button>
+      <button type="button" class="btn btn--ghost" data-close-cart>Close</button>
+    </div></div>`;
   document.body.appendChild(wrap);
 }
 
-var pendingConfirmation = null;
+let pendingConfirmation = null;
 
 function injectConfirmationModal() {
   if (document.getElementById("modal-confirm-backdrop")) return;
-  var wrap = document.createElement("div");
+  const wrap = document.createElement("div");
   wrap.innerHTML =
-    '<div class="modal-backdrop modal-backdrop--confirm" id="modal-confirm-backdrop" aria-hidden="true"></div>' +
-    '<div class="modal modal--confirm" id="modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg" hidden>' +
-    '<h2 id="confirm-title"></h2>' +
-    '<p id="confirm-msg"></p>' +
-    '<div class="modal__actions">' +
-    '<button type="button" class="btn btn--ghost" id="confirm-cancel">Cancel</button>' +
-    '<button type="button" class="btn btn--primary" id="confirm-ok">Confirm</button>' +
-    "</div></div>";
+    `<div class="modal-backdrop modal-backdrop--confirm" id="modal-confirm-backdrop" aria-hidden="true"></div>
+    <div class="modal modal--confirm" id="modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg" hidden>
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-msg"></p>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--ghost" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn btn--primary" id="confirm-ok">Confirm</button>
+    </div></div>`;
   document.body.appendChild(wrap);
 }
 
 export function showConfirmation(title, message) {
-  return new Promise(function (resolve) {
+  return new Promise((resolve) => {
     injectConfirmationModal();
-    var bd = document.getElementById("modal-confirm-backdrop");
-    var m = document.getElementById("modal-confirm");
+    const bd = document.getElementById("modal-confirm-backdrop");
+    const m = document.getElementById("modal-confirm");
     if (!bd || !m) { resolve(false); return; }
     document.getElementById("confirm-title").textContent = title;
     document.getElementById("confirm-msg").textContent = message;
-    var okBtn = document.getElementById("confirm-ok");
-    var cancelBtn = document.getElementById("confirm-cancel");
+    const okBtn = document.getElementById("confirm-ok");
+    const cancelBtn = document.getElementById("confirm-cancel");
 
     function cleanup() {
       bd.classList.remove("is-open");
@@ -342,9 +340,9 @@ export function showConfirmation(title, message) {
       pendingConfirmation = null;
     }
 
-    okBtn.onclick = function () { cleanup(); resolve(true); };
-    cancelBtn.onclick = function () { cleanup(); resolve(false); };
-    bd.onclick = function () { cleanup(); resolve(false); };
+    okBtn.onclick = () => { cleanup(); resolve(true); };
+    cancelBtn.onclick = () => { cleanup(); resolve(false); };
+    bd.onclick = () => { cleanup(); resolve(false); };
 
     m.hidden = false;
     bd.classList.add("is-open");
@@ -377,9 +375,9 @@ function initComingSoonTriggers() {
       closeModalPair("modal-coming-soon-backdrop", "modal-coming-soon");
     }
   });
-  var bd = document.getElementById("modal-coming-soon-backdrop");
+  const bd = document.getElementById("modal-coming-soon-backdrop");
   if (bd) {
-    bd.addEventListener("click", function () {
+    bd.addEventListener("click", () => {
       closeModalPair("modal-coming-soon-backdrop", "modal-coming-soon");
     });
   }

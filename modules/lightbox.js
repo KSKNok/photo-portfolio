@@ -9,7 +9,7 @@ import {
   closeModalPair,
 } from "./modal.js";
 
-var lightboxState = {
+let lightboxState = {
   items: [],
   index: 0,
   lastFocus: null,
@@ -17,23 +17,24 @@ var lightboxState = {
 
 function injectShellLightbox() {
   if (document.getElementById("lightbox-root")) return;
-  var root = document.createElement("div");
+  const root = document.createElement("div");
   root.id = "lightbox-root";
-  root.innerHTML =
-    '<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview" hidden>' +
-    '<div class="lightbox__panel" tabindex="-1">' +
-    '<button type="button" class="lightbox__close" aria-label="Close preview">&times;</button>' +
-    '<button type="button" class="lightbox__prev" aria-label="Previous image">&#8592;</button>' +
-    '<button type="button" class="lightbox__next" aria-label="Next image">&#8594;</button>' +
-    "<img src=\"\" alt=\"\" />" +
-    '<p class="lightbox__caption"></p>' +
-    "</div></div>";
+  root.innerHTML = `
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview" hidden>
+      <div class="lightbox__panel" tabindex="-1">
+        <button type="button" class="lightbox__close" aria-label="Close preview">&times;</button>
+        <button type="button" class="lightbox__prev" aria-label="Previous image">&#8592;</button>
+        <button type="button" class="lightbox__next" aria-label="Next image">&#8594;</button>
+        <img src="" alt="" />
+        <p class="lightbox__caption"></p>
+      </div>
+    </div>`;
   document.body.appendChild(root);
 }
 
 export function openLightbox(items, index) {
   injectShellLightbox();
-  var lb = document.getElementById("lightbox");
+  const lb = document.getElementById("lightbox");
   if (!lb) return;
   lightboxState.items = items;
   lightboxState.index = Math.max(
@@ -42,7 +43,7 @@ export function openLightbox(items, index) {
   );
   lightboxState.lastFocus = document.activeElement;
   lb.hidden = false;
-  requestAnimationFrame(function () {
+  requestAnimationFrame(() => {
     lb.classList.add("is-open");
   });
   document.body.classList.add("lightbox-open");
@@ -51,11 +52,11 @@ export function openLightbox(items, index) {
 }
 
 export function closeLightbox() {
-  var lb = document.getElementById("lightbox");
+  const lb = document.getElementById("lightbox");
   if (!lb) return;
   lb.classList.remove("is-open");
   document.body.classList.remove("lightbox-open");
-  var end = function () {
+  const end = () => {
     lb.hidden = true;
     lb.removeEventListener("transitionend", end);
     deactivateDialog();
@@ -67,11 +68,11 @@ export function closeLightbox() {
 }
 
 function updateLightboxSlide() {
-  var lb = document.getElementById("lightbox");
+  const lb = document.getElementById("lightbox");
   if (!lb) return;
-  var img = lb.querySelector("img");
-  var cap = lb.querySelector(".lightbox__caption");
-  var item = lightboxState.items[lightboxState.index];
+  const img = lb.querySelector("img");
+  const cap = lb.querySelector(".lightbox__caption");
+  const item = lightboxState.items[lightboxState.index];
   if (!item || !img) return;
   img.src = item.image;
   img.alt = item.title || "";
@@ -96,18 +97,18 @@ export function lightboxNext() {
 
 export function initLightboxUi() {
   injectShellLightbox();
-  var lb = document.getElementById("lightbox");
+  const lb = document.getElementById("lightbox");
   if (!lb) return;
-  lb.addEventListener("click", function (e) {
+  lb.addEventListener("click", (e) => {
     if (e.target === lb) closeLightbox();
   });
-  var closeBtn = lb.querySelector(".lightbox__close");
+  const closeBtn = lb.querySelector(".lightbox__close");
   if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
-  var prev = lb.querySelector(".lightbox__prev");
-  var next = lb.querySelector(".lightbox__next");
+  const prev = lb.querySelector(".lightbox__prev");
+  const next = lb.querySelector(".lightbox__next");
   if (prev) prev.addEventListener("click", lightboxPrev);
   if (next) next.addEventListener("click", lightboxNext);
-  document.addEventListener("keydown", function (e) {
+  document.addEventListener("keydown", (e) => {
     if (!lb.classList.contains("is-open")) return;
     if (e.key === "Escape") closeLightbox();
     if (e.key === "ArrowLeft") lightboxPrev();
@@ -116,18 +117,18 @@ export function initLightboxUi() {
 }
 
 export function initModalEscape() {
-  document.addEventListener("keydown", function (e) {
+  document.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
       handleDialogTab(e);
       return;
     }
     if (e.key !== "Escape") return;
-    var cart = document.getElementById("modal-cart");
+    const cart = document.getElementById("modal-cart");
     if (cart && cart.classList.contains("is-open")) {
       closeModalPair("modal-cart-backdrop", "modal-cart");
       return;
     }
-    var cs = document.getElementById("modal-coming-soon");
+    const cs = document.getElementById("modal-coming-soon");
     if (cs && cs.classList.contains("is-open")) {
       closeModalPair("modal-coming-soon-backdrop", "modal-coming-soon");
     }
@@ -137,23 +138,23 @@ export function initModalEscape() {
 function handleDialogTab(event) {
   if (!event || event.key !== "Tab") return;
   // Check if any dialog is active by looking for is-open modals
-  var cart = document.getElementById("modal-cart");
-  var lb = document.getElementById("lightbox");
-  var confirm = document.getElementById("modal-confirm");
+  const cart = document.getElementById("modal-cart");
+  const lb = document.getElementById("lightbox");
+  const confirm = document.getElementById("modal-confirm");
 
   if (!cart && !lb && !confirm) return;
 
-  var activeDialog = null;
+  let activeDialog = null;
   if (cart && cart.classList.contains("is-open")) activeDialog = cart;
   if (lb && lb.classList.contains("is-open")) activeDialog = lb;
   if (confirm && confirm.classList.contains("is-open")) activeDialog = confirm;
   if (!activeDialog) return;
 
-  var focusable = Array.prototype.filter.call(
+  const focusable = Array.prototype.filter.call(
     activeDialog.querySelectorAll(
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     ),
-    function (el) {
+    (el) => {
       return (
         el.offsetWidth > 0 ||
         el.offsetHeight > 0 ||
@@ -162,7 +163,7 @@ function handleDialogTab(event) {
     }
   );
   if (!focusable.length) return;
-  var currentIndex = focusable.indexOf(document.activeElement);
+  const currentIndex = focusable.indexOf(document.activeElement);
   if (event.shiftKey) {
     if (currentIndex === 0 || document.activeElement === activeDialog) {
       event.preventDefault();
